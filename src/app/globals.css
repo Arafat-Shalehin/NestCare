@@ -1,26 +1,61 @@
 @import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default;
+}
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+}
+
+@custom-variant dark (&:where([data-theme=night], [data-theme=night] *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* Brand – Primary (Blue) */
+  --color-primary-50: #eef5ff;
+  --color-primary-100: #d6e4ff;
+  --color-primary-200: #b5ccff;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb; /* main brand/action color */
+  --color-primary-700: #1d4ed8;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Brand – Secondary (Teal) */
+  --color-secondary-50: #e6f6f4;
+  --color-secondary-100: #c5ede6;
+  --color-secondary-200: #97ded2;
+  --color-secondary-500: #10b981;
+  --color-secondary-600: #059669;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+  /* Accent (Warm Peach) */
+  --color-accent-50: #fff4ec;
+  --color-accent-100: #ffe0c2;
+  --color-accent-200: #ffc38c;
+  --color-accent-400: #fb923c;
+  --color-accent-500: #f97316;
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* Neutrals – Backgrounds & Surfaces */
+  --color-bg-base: #f9fafb; /* page background */
+  --color-bg-soft: #f3f4f6; /* section bg */
+  --color-surface: #ffffff; /* cards, panels */
+  --color-surface-muted: #f9fafb;
+  --color-border-subtle: #e5e7eb;
+  --color-border-strong: #d1d5db;
+
+  /* Neutrals – Text */
+  --color-text-main: #111827; /* primary text */
+  --color-text-muted: #6b7280; /* secondary text */
+  --color-text-soft: #9ca3af; /* placeholders */
+  --color-text-invert: #f9fafb; /* text on dark / primary backgrounds */
+
+  /* Status / Semantic Colors */
+  --color-success-100: #dcfce7;
+  --color-success-500: #22c55e;
+
+  --color-warning-100: #fef3c7;
+  --color-warning-500: #f59e0b;
+
+  --color-error-100: #fee2e2;
+  --color-error-500: #ef4444;
+
+  --color-info-100: #e0f2fe;
+  --color-info-500: #0ea5e9;
 }
