@@ -134,7 +134,14 @@ function TestimonialCard({ testimonial }) {
     .join("");
 
   return (
-    <article className="group min-w-65 max-w-xs shrink-0 rounded-2xl border border-(--color-border-subtle) bg-(--color-surface) p-4 md:p-5 shadow-sm transition-transform duration-300 ease-out hover:-translate-y-1.5 hover:border-(--color-primary-200)">
+    <article
+      className="group min-w-65 max-w-xs 
+    shrink-0 rounded-2xl border 
+    border-(--color-border-subtle) bg-(--color-surface) 
+    p-4 md:p-5 shadow-sm transition-transform 
+    duration-300 ease-out hover:-translate-y-1.5 
+    hover:border-(--color-primary-200)"
+    >
       <div className="flex items-center gap-3 mb-3">
         <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-(--color-primary-50) text-(--color-primary-600) text-sm font-semibold">
           {initials}
