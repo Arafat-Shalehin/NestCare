@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Footer() {
@@ -8,9 +9,13 @@ export default function Footer() {
           {/* Brand / about */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-3">
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-(--color-primary-600) text-(--color-text-invert) text-lg font-bold shadow-sm">
-                N
-              </span>
+              <Image
+                src={"/favicon.ico"}
+                alt="Web Logo"
+                width={50}
+                height={50}
+                className="h-10 w-10 rounded-full"
+              />
               <div className="flex flex-col leading-tight">
                 <span className="text-base font-semibold tracking-tight text-(--color-text-main)">
                   NestCare
@@ -21,8 +26,9 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-sm text-(--color-text-muted) max-w-md">
-              NestCare connects you with verified caregivers for babies, elderly, and
-              sick family members — making home caregiving simple, safe, and accessible.
+              NestCare connects you with verified caregivers for babies,
+              elderly, and sick family members — making home caregiving simple,
+              safe, and accessible.
             </p>
           </div>
 
@@ -33,17 +39,26 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2 text-sm text-(--color-text-muted)">
               <li>
-                <Link href="/services/baby-care" className="hover:text-(--color-text-main)">
+                <Link
+                  href="/services/baby-care"
+                  className="hover:text-(--color-text-main)"
+                >
                   Baby Care
                 </Link>
               </li>
               <li>
-                <Link href="/services/elderly-care" className="hover:text-(--color-text-main)">
+                <Link
+                  href="/services/elderly-care"
+                  className="hover:text-(--color-text-main)"
+                >
                   Elderly Care
                 </Link>
               </li>
               <li>
-                <Link href="/services/sick-care" className="hover:text-(--color-text-main)">
+                <Link
+                  href="/services/sick-care"
+                  className="hover:text-(--color-text-main)"
+                >
                   Sick People Care
                 </Link>
               </li>
@@ -62,7 +77,10 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-(--color-text-main)">
+                <Link
+                  href="/contact"
+                  className="hover:text-(--color-text-main)"
+                >
                   Contact
                 </Link>
               </li>
