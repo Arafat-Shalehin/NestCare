@@ -132,7 +132,7 @@ export default function ServicesSection() {
                     </div>
                   </div>
                   <span
-                    className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ${service.tagBg} ${service.tagText}`}
+                    className={`inline-flex text-center items-center rounded-full px-3 py-1 text-[11px] font-medium ${service.tagBg} ${service.tagText}`}
                   >
                     Trusted care
                   </span>
@@ -159,15 +159,6 @@ export default function ServicesSection() {
                 <div className="text-[11px] text-(--color-text-soft)">
                   Duration-based pricing • Live booking status
                 </div>
-                <Link
-                  href={`/services/${service.slug}`}
-                  className="text-xs font-medium text-(--color-primary-600) group-hover:text-(--color-primary-700) inline-flex items-center gap-1"
-                >
-                  View details
-                  <span className="transition-transform group-hover:translate-x-0.5">
-                    →
-                  </span>
-                </Link>
               </div>
             </motion.article>
           ))}
