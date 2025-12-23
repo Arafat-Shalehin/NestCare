@@ -141,7 +141,7 @@ export default async function ServiceDetailPage(props) {
                     {priceText}
                   </p>
                 </div>
-                <span className="inline-flex items-center rounded-full bg-(--color-primary-50) px-3 py-1 text-[11px] font-medium text-(--color-primary-600)">
+                <span className="inline-flex text-center items-center rounded-full bg-(--color-primary-50) px-3 py-1 text-[11px] font-medium text-(--color-primary-600)">
                   Duration‑based pricing
                 </span>
               </div>
