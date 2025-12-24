@@ -242,7 +242,9 @@ export default function RegisterForm() {
           Already have an account?{" "}
           <a
             href={`/login${
-              redirect ? `?redirect=${encodeURIComponent(redirect)}` : ""
+              callbackUrl && callbackUrl !== "/"
+                ? `?redirect=${encodeURIComponent(callbackUrl)}`
+                : ""
             }`}
             className="text-(--color-primary-600) hover:text-(--color-primary-700) font-medium"
           >

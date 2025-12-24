@@ -2,6 +2,8 @@ import Link from "next/link";
 import CancelBookingButton from "@/components/booking/CancelBookingButton";
 import { getBookingsForUser } from "@/actions/server/bookings";
 import BookingDetailsButton from "@/components/booking/BookingDetailsButton";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 
 function formatCurrency(amount, currency) {
   if (amount == null || isNaN(amount)) return "-";
@@ -55,8 +57,8 @@ export const metadata = {
 };
 
 export default async function MyBookingsPage() {
-  // TODO: When auth is ready, will pass the logged-in user's id here
-  const bookings = await getBookingsForUser(null);
+  const session = await getServerSession(authOptions);
+  const bookings = await getBookingsForUser(session.user.id);
 
   const totalCount = bookings.length;
   const pendingCount = bookings.filter((b) => b.status === "PENDING").length;
