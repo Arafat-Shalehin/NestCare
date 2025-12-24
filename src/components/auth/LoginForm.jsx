@@ -11,6 +11,8 @@ export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect");
+  const callbackUrl =
+    searchParams.get("callbackUrl") || searchParams.get("redirect") || "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,9 +23,9 @@ export default function LoginForm() {
   // If already logged in, redirect away from /login
   useEffect(() => {
     if (status === "authenticated") {
-      router.replace(redirect || "/");
+      router.replace(callbackUrl);
     }
-  }, [status, redirect, router]);
+  }, [status, callbackUrl, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,7 +37,7 @@ export default function LoginForm() {
         redirect: false,
         email,
         password,
-        callbackUrl: redirect || "/",
+        callbackUrl,
       });
 
       if (result?.error) {
@@ -45,7 +47,7 @@ export default function LoginForm() {
       }
 
       // On success, result.url holds the callbackUrl
-      router.push(result?.url || redirect || "/");
+      router.push(result?.url || callbackUrl);
     } catch (error) {
       console.error("Login error:", error);
       setErrorMsg("Login failed. Please try again.");
@@ -56,7 +58,7 @@ export default function LoginForm() {
   const handleGoogleLogin = async () => {
     setErrorMsg("");
     await signIn("google", {
-      callbackUrl: redirect || "/",
+      callbackUrl,
     });
   };
 
@@ -145,7 +147,9 @@ export default function LoginForm() {
           New to NestCare?{" "}
           <a
             href={`/register${
-              redirect ? `?redirect=${encodeURIComponent(redirect)}` : ""
+              callbackUrl && callbackUrl !== "/"
+                ? `?redirect=${encodeURIComponent(callbackUrl)}`
+                : ""
             }`}
             className="text-(--color-primary-600) hover:text-(--color-primary-700) font-medium"
           >

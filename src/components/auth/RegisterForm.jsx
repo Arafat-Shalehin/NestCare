@@ -24,6 +24,8 @@ export default function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect");
+  const callbackUrl =
+    searchParams.get("callbackUrl") || searchParams.get("redirect") || "/";
 
   const [nid, setNid] = useState("");
   const [name, setName] = useState("");
@@ -69,11 +71,11 @@ export default function RegisterForm() {
         redirect: false,
         email,
         password,
-        callbackUrl: redirect || "/",
+        callbackUrl,
       });
 
       if (!loginResult?.error) {
-        router.push(loginResult?.url || redirect || "/");
+        router.push(loginResult?.url || callbackUrl);
       } else {
         // fallback: just send them to login page
         router.push(
@@ -212,7 +214,7 @@ export default function RegisterForm() {
           >
             {isSubmitting ? "Creating account..." : "Create account"}
           </button>
-          
+
           <div className="flex items-center gap-3 my-3">
             <div className="h-px flex-1 bg-(--color-border-subtle)" />
             <span className="text-[11px] text-(--color-text-soft)">OR</span>
