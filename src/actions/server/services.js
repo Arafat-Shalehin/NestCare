@@ -10,7 +10,7 @@ export const getServices = async () => {
 };
 
 export const getSingleServices = async (id) => {
-  console.log(id);
+  // console.log(id);
   if (id.length != 24) {
     return {};
   }

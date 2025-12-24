@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { collections, dbConnect } from "@/lib/dbConnect";
 import { ObjectId } from "mongodb";
 import { getServiceBySlug } from "@/actions/server/services";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+import { sendBookingInvoiceEmail } from "@/lib/sendEmail";
 
 function computePerUnitRate(baseRate, baseUnit, durationUnit) {
   if (!baseRate) return 0;
@@ -22,7 +25,6 @@ function computePerUnitRate(baseRate, baseUnit, durationUnit) {
 export async function POST(req) {
   try {
     const body = await req.json();
-    console.log("POST BODY: ",body);
 
     const {
       serviceSlug,
@@ -35,7 +37,20 @@ export async function POST(req) {
       address,
     } = body;
 
-    // Basic validation
+    // 1) Require auth
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: "You must be logged in to create a booking." },
+        { status: 401 }
+      );
+    }
+
+    const userId = session.user.id;
+    const userEmail = session.user.email;
+    const userName = session.user.name || "";
+
+    // 2) Validate input
     if (
       !serviceSlug ||
       !durationUnit ||
@@ -51,10 +66,7 @@ export async function POST(req) {
       );
     }
 
-    // When auth is ready, derive userId from session instead of trusting body
-    const userId = null; // placeholder (e.g. session.user.id)
-
-    // Fetch service & pricing
+    // 3) Get service & pricing
     const service = await getServiceBySlug(serviceSlug);
     if (!service) {
       return NextResponse.json(
@@ -78,25 +90,22 @@ export async function POST(req) {
 
     const totalCost = durationValue * perUnitRate;
 
+    // 4) Insert booking
     const bookingsCollection = await dbConnect(collections.BOOKINGS);
-
     const now = new Date();
 
     const doc = {
-      // relations
-      userId: userId ? new ObjectId(userId) : null, // update when auth is ready
+      userId: userId ? new ObjectId(userId) : null,
       serviceId: new ObjectId(service._id),
       serviceSlug: service.slug,
       serviceName: service.name,
 
-      // duration & pricing
-      durationUnit, // "hour" | "day"
+      durationUnit,
       durationValue,
       perUnitRate,
       totalCost,
       currency,
 
-      // location
       location: {
         division,
         district,
@@ -105,23 +114,36 @@ export async function POST(req) {
         address,
       },
 
-      // status & timestamps
-      status: "PENDING", // PENDING | CONFIRMED | COMPLETED | CANCELLED
+      status: "PENDING",
       createdAt: now,
       updatedAt: now,
     };
 
     const result = await bookingsCollection.insertOne(doc);
 
-    // Shape response for client
-    const responseBooking = {
+    const booking = {
       _id: result.insertedId.toString(),
       ...doc,
       userId: doc.userId ? doc.userId.toString() : null,
       serviceId: doc.serviceId.toString(),
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
     };
 
-    return NextResponse.json(responseBooking, { status: 201 });
+    // 5) Send invoice email 
+    try {
+      await sendBookingInvoiceEmail({
+        to: userEmail,
+        userName,
+        booking,
+        service,
+      });
+    } catch (emailError) {
+      console.error("Error sending booking invoice:", emailError);
+    }
+
+    // 6) Return booking to client
+    return NextResponse.json(booking, { status: 201 });
   } catch (error) {
     console.error("POST /api/bookings error:", error);
     return NextResponse.json(

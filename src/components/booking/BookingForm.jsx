@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 function formatCurrency(amount, currency) {
   if (!amount || isNaN(amount)) return "-";
@@ -83,17 +84,18 @@ export default function BookingForm({ service }) {
         },
         body: JSON.stringify(payload),
       });
-      console.log(res);
+      // console.log(res);
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || "Failed to create booking");
       }
 
-      alert("Success");
+      // alert("Success");
+      Swal.fire("success", "Your Booking has been confirmed", "success")
 
       const data = await res.json();
-      console.log("Booking created:", data);
+      // console.log("Booking created:", data);
 
       // Redirect to My Bookings
       router.push("/my-bookings");
