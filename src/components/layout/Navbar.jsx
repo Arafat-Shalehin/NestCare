@@ -1,5 +1,6 @@
 "use client";
 
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -13,10 +14,26 @@ const navLinks = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  // console.log(user);
 
   const isActive = (href) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
+  };
+
+  const getInitials = (name, email) => {
+    if (name) {
+      return name
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase();
+    }
+    if (email) return email[0].toUpperCase();
+    return "N";
   };
 
   return (
@@ -25,9 +42,6 @@ export default function Navbar() {
         {/* Left: Logo */}
         <div className="flex-1">
           <Link href="/" className="inline-flex items-center gap-3">
-            {/* <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-(--color-primary-600) text-(--color-text-invert) text-lg font-bold shadow-sm">
-              N
-            </span> */}
             <Image
               src={"/favicon.ico"}
               alt="Web Logo"
@@ -65,7 +79,66 @@ export default function Navbar() {
 
         {/* Right: Auth actions (desktop) */}
         <div className="hidden md:flex items-center gap-3">
-          <Link
+          {status === "loading" && (
+            <div className="h-9 w-9 rounded-full bg-(--color-bg-soft) animate-pulse" />
+          )}
+
+          {status === "authenticated" && user && (
+            <div className="flex items-center gap-3">
+              {/* User dropdown */}
+              <div className="dropdown dropdown-end">
+                <button
+                  tabIndex={0}
+                  className="btn btn-ghost btn-circle avatar"
+                >
+                  <div className="w-9 rounded-full bg-(--color-primary-600) text-(--color-text-invert) flex items-center justify-center text-xs font-semibold">
+                    {getInitials(user?.name, user?.email)}
+                  </div>
+                </button>
+                <ul
+                  tabIndex={0}
+                  className="menu menu-sm dropdown-content mt-3 w-56 rounded-box bg-(--color-surface) p-2 shadow-lg border border-(--color-border-subtle)"
+                >
+                  <li className="py-2 border-b border-(--color-border-subtle) mb-1">
+                    <p className="text-sm font-semibold text-(--color-text-main)">
+                      Name: {user.name || "Account"}
+                    </p>
+                    <p className="text-[11px] text-(--color-text-soft) truncate">
+                      Email: {user.email}
+                    </p>
+                  </li>
+                  {/* You can add /profile later */}
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() => signOut({ callbackUrl: "/" })}
+                      className="text-(--color-error-500)"
+                    >
+                      Sign out
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {status !== "authenticated" && (
+            <>
+              <Link
+                href="/login"
+                className="btn btn-outline btn-sm text-(--color-text-muted) hover:bg-(--color-bg-soft)"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/register"
+                className="btn btn-sm border-none bg-(--color-primary-600) text-(--color-text-invert) hover:bg-(--color-primary-700) shadow-sm"
+              >
+                Get Started
+              </Link>
+            </>
+          )}
+          {/* <Link
             href="/login"
             className="btn btn-outline btn-sm text-(--color-text-muted) hover:bg-(--color-bg-soft)"
           >
@@ -76,7 +149,7 @@ export default function Navbar() {
             className="btn btn-sm border-none bg-(--color-primary-600) text-(--color-text-invert) hover:bg-(--color-primary-700) shadow-sm"
           >
             Get Started
-          </Link>
+          </Link> */}
         </div>
 
         {/* Mobile: Menu button */}
@@ -119,17 +192,41 @@ export default function Navbar() {
                 </li>
               ))}
               <div className="divider my-2" />
-              <li>
-                <Link href="/login">Log in</Link>
-              </li>
-              <li>
-                <Link
-                  href="/register"
-                  className="font-medium text-(--color-primary-600)"
-                >
-                  Get Started
-                </Link>
-              </li>
+              {status === "authenticated" && user ? (
+                <>
+                  <li className="py-2 border-b border-(--color-border-subtle) mb-1">
+                    <p className="text-sm font-semibold text-(--color-text-main)">
+                      Name: {user.name || "Account"}
+                    </p>
+                    <p className="text-[11px] text-(--color-text-soft) truncate">
+                      Email: {user.email}
+                    </p>
+                  </li>
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() => signOut({ callbackUrl: "/" })}
+                      className="text-(--color-error-500)"
+                    >
+                      Sign out
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <Link href="/login">Log in</Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/register"
+                      className="font-medium text-(--color-primary-600)"
+                    >
+                      Get Started
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
         </div>
