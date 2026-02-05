@@ -38,10 +38,10 @@ export default function HeroSection() {
                 Book a Caregiver
               </Link>
               <Link
-                href="/about"
-                className="btn btn-md btn-ghost text-(--color-text-muted) hover:bg-(--color-bg-soft)"
+                href="/find-match"
+                className="btn btn-md btn-outline border-(--color-primary-600) text-(--color-primary-600) hover:bg-(--color-primary-50) hover:border-(--color-primary-700)"
               >
-                Learn how it works
+                ✨ Find My Match
               </Link>
             </div>
 
