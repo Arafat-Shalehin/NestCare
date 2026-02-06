@@ -85,6 +85,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/live-map" className="hover:text-(--color-text-main)">
+                  Live Network Map
+                </Link>
+              </li>
+              <li>
                 <Link href="/help" className="hover:text-(--color-text-main)">
                   Help &amp; FAQs
                 </Link>

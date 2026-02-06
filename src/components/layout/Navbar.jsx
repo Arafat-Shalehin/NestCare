@@ -9,6 +9,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/services", label: "Services" },
   { href: "/find-match", label: "Find My Match" },
+  { href: "/live-map", label: "Live Map" },
   { href: "/about", label: "About" },
   { href: "/my-bookings", label: "My Bookings" },
 ];
@@ -67,11 +68,10 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm font-medium transition-colors ${
-                isActive(link.href)
+              className={`text-sm font-medium transition-colors ${isActive(link.href)
                   ? "text-(--color-primary-600)"
                   : "text-(--color-text-muted) hover:text-(--color-text-main)"
-              }`}
+                }`}
             >
               {link.label}
             </Link>
