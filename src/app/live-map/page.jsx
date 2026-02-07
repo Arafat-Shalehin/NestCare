@@ -38,7 +38,7 @@ export default function LiveMapPage() {
                         <p className="text-xs text-(--color-text-muted)">Trusted by thousands of happy families.</p>
                     </div>
                     <div className="p-6 rounded-2xl bg-(--color-surface) border border-(--color-border-subtle) space-y-2">
-                        <h3 className="text-3xl font-bold text-(--color-accent-50)">4.9/5</h3>
+                        <h3 className="text-3xl font-bold text-(--color-accent-200)">4.9/5</h3>
                         <p className="text-sm font-medium text-(--color-text-main)">Average Rating</p>
                         <p className="text-xs text-(--color-text-muted)">Highest safety and satisfaction standards.</p>
                     </div>

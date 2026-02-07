@@ -63,7 +63,7 @@ export default function Navbar() {
         </div>
 
         {/* Center: Nav links (desktop) */}
-        <div className="hidden md:flex items-center gap-6 mr-5">
+        <div className="hidden lg:flex items-center gap-6 mr-5">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -79,7 +79,7 @@ export default function Navbar() {
         </div>
 
         {/* Right: Auth actions (desktop) */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-3">
           {status === "loading" && (
             <div className="h-9 w-9 rounded-full bg-(--color-bg-soft) animate-pulse" />
           )}
@@ -139,22 +139,10 @@ export default function Navbar() {
               </Link>
             </>
           )}
-          {/* <Link
-            href="/login"
-            className="btn btn-outline btn-sm text-(--color-text-muted) hover:bg-(--color-bg-soft)"
-          >
-            Log in
-          </Link>
-          <Link
-            href="/register"
-            className="btn btn-sm border-none bg-(--color-primary-600) text-(--color-text-invert) hover:bg-(--color-primary-700) shadow-sm"
-          >
-            Get Started
-          </Link> */}
         </div>
 
         {/* Mobile: Menu button */}
-        <div className="md:hidden flex-none">
+        <div className="lg:hidden flex-none">
           <div className="dropdown dropdown-end">
             <button
               tabIndex={0}

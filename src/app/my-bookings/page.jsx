@@ -2,6 +2,7 @@ import Link from "next/link";
 import CancelBookingButton from "@/components/booking/CancelBookingButton";
 import { getBookingsForUser } from "@/actions/server/bookings";
 import BookingDetailsButton from "@/components/booking/BookingDetailsButton";
+import TimelineWrapper from "@/components/timeline/TimelineWrapper";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 
@@ -104,13 +105,13 @@ export default async function MyBookingsPage() {
               <p className="text-lg font-semibold text-(--color-primary-600)">
                 {confirmedCount}
               </p>
-              <p className="text-(--color-text-soft)">Confirmed</p>
+              <p className="text-(--color-text-soft) md:text-[11px] lg:text-sm">Confirmed</p>
             </div>
             <div className="rounded-2xl bg-(--color-success-100) border border-(--color-border-subtle) px-3 py-2">
               <p className="text-lg font-semibold text-(--color-success-500)">
                 {completedCount}
               </p>
-              <p className="text-(--color-text-soft)">Completed</p>
+              <p className="text-(--color-text-soft) md:text-[11px] lg:text-sm md:mr-3 lg:mr-0">Completed</p>
             </div>
           </div>
         </div>
@@ -229,6 +230,10 @@ export default async function MyBookingsPage() {
                         {/* Actions */}
                         <td className="text-right">
                           <div className="flex items-center justify-end gap-2">
+                            <TimelineWrapper
+                              bookingId={booking._id}
+                              bookingName={booking.serviceName}
+                            />
                             <BookingDetailsButton booking={booking} />
                             <CancelBookingButton
                               bookingId={booking._id}
