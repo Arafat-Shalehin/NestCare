@@ -29,7 +29,7 @@ export const metadata = {
 };
 
 export default async function ServicesPage() {
-  const services = await getServices(); 
+  const services = await getServices();
 
   return (
     <section className="bg-(--color-bg-base)">
@@ -62,82 +62,71 @@ export default async function ServicesPage() {
             return (
               <article
                 key={service._id}
-                className="group h-full rounded-2xl border border-(--color-border-subtle) bg-(--color-surface) p-5 md:p-6 flex flex-col justify-between hover:-translate-y-1.5 hover:shadow-xl hover:shadow-black/10 transition-transform duration-300 ease-out"
+                className="group relative h-full rounded-3xl border border-(--color-border-subtle) bg-(--color-surface) overflow-hidden hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 ease-out"
               >
-                <div className="space-y-4">
-                  {/* Header row */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1.5">
-                      <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-(--color-bg-soft) text-lg">
-                        {service.icon || "🩺"}
-                      </div>
-                      <h2 className="text-base md:text-lg font-semibold text-(--color-text-main)">
-                        {service.name}
-                      </h2>
-                      {service.label && (
-                        <p className="text-[11px] uppercase tracking-[0.16em] text-(--color-text-soft)">
-                          {service.label}
-                        </p>
-                      )}
+                {/* Decorative background element */}
+                <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-40 h-40 bg-linear-to-br from-primary/10 to-transparent rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+
+                <div className="relative p-6 md:p-8 flex flex-col h-full space-y-6">
+                  {/* Top: Icon & Badges */}
+                  <div className="flex items-start justify-between">
+                    <div className="w-14 h-14 rounded-2xl bg-(--color-bg-soft) flex items-center justify-center text-3xl shadow-sm group-hover:scale-110 group-hover:bg-primary/5 transition-all duration-500">
+                      {service.icon || "🩺"}
                     </div>
-                    <span
-                      className={`inline-flex text-center items-center rounded-full px-3 py-1 text-[11px] font-medium ${accentClasses.pillBg} ${accentClasses.pillText}`}
-                    >
-                      {service.careType === "home-based"
-                        ? "Home-based care"
-                        : "Care service"}
-                    </span>
+                    <div className="flex flex-col items-end gap-2">
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${accentClasses.pillBg} ${accentClasses.pillText}`}>
+                        {service.careType === "home-based" ? "Home Based" : "Care Service"}
+                      </span>
+                      <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-500 text-[10px] font-black uppercase tracking-widest">
+                        {service.label || "General"}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Description */}
-                  <p className="text-sm text-(--color-text-muted)">{tagline}</p>
+                  {/* Info */}
+                  <div className="space-y-2">
+                    <h2 className="text-xl md:text-2xl font-black tracking-tight text-(--color-text-main) group-hover:text-primary transition-colors">
+                      {service.name}
+                    </h2>
+                    <p className="text-[10px] font-mono text-(--color-text-soft) opacity-60">
+                      ID: {service.slug}
+                    </p>
+                    <p className="text-sm text-(--color-text-muted) leading-relaxed">
+                      {tagline}
+                    </p>
+                  </div>
 
                   {/* Features */}
-                  {Array.isArray(service.features) &&
-                    service.features.length > 0 && (
-                      <ul className="space-y-1.5 text-xs pt-1">
-                        {service.features.map((feature) => (
-                          <li key={feature} className="flex gap-2">
-                            <span className="mt-1 h-1.5 w-1.5 rounded-full bg-(--color-primary-200)" />
-                            <span className="text-(--color-text-muted)">
-                              {feature}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-
-                  {/* Pricing */}
-                  {service.pricing && (
-                    <p className="text-xs text-(--color-text-soft) pt-1">
-                      Starting from{" "}
-                      <span className="font-medium text-(--color-text-main)">
-                        {service.pricing.currency === "BDT"
-                          ? "৳"
-                          : service.pricing.currency}{" "}
-                        {Number(service.pricing.baseRate || 0).toLocaleString(
-                          "en-BD"
-                        )}{" "}
-                        / {service.pricing.unit || "hour"}
-                      </span>
-                    </p>
+                  {Array.isArray(service.features) && service.features.length > 0 && (
+                    <ul className="grid grid-cols-1 gap-2 pt-2">
+                      {service.features.slice(0, 3).map((feature) => (
+                        <li key={feature} className="flex items-center gap-2 text-xs text-(--color-text-soft)">
+                          <div className="w-1 h-1 rounded-full bg-primary/40" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
                   )}
-                </div>
 
-                {/* Bottom row */}
-                <div className="pt-4 mt-4 border-t border-(--color-border-subtle) flex items-center justify-between">
-                  <p className="text-[11px] text-(--color-text-soft)">
-                    Duration-based pricing • Live status tracking
-                  </p>
-                  <Link
-                    href={`/services/${service.slug}`}
-                    className="text-xs font-medium text-(--color-primary-600) group-hover:text-(--color-primary-700) inline-flex items-center gap-1"
-                  >
-                    View details
-                    <span className="transition-transform group-hover:translate-x-0.5">
-                      →
-                    </span>
-                  </Link>
+                  {/* Price & Action */}
+                  <div className="mt-auto pt-6 border-t border-(--color-border-subtle) flex items-end justify-between">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-(--color-text-soft) mb-1">Starting Rate</p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-black text-primary">
+                          {service.pricing?.currency === "BDT" ? "৳" : "$"}
+                          {Number(service.pricing?.baseRate || 0).toLocaleString()}
+                        </span>
+                        <span className="text-xs font-bold text-(--color-text-soft)">/{service.pricing?.unit || "hr"}</span>
+                      </div>
+                    </div>
+                    <Link
+                      href={`/services/${service.slug}`}
+                      className="btn btn-sm btn-primary rounded-xl font-bold px-4"
+                    >
+                      Book Now
+                    </Link>
+                  </div>
                 </div>
               </article>
             );

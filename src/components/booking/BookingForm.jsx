@@ -1,5 +1,6 @@
 "use client";
 
+import { signOut, useSession } from "next-auth/react";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
@@ -13,10 +14,17 @@ function formatCurrency(amount, currency) {
 export default function BookingForm({ service }) {
   const router = useRouter();
 
+  const { data: session } = useSession();
+  const user = session?.user || {};
+
   const pricing = service.pricing || {};
   const baseRate = Number(pricing.baseRate || 0);
   const baseUnit = pricing.unit || "hour"; // from DB: "hour" or "day"
   const currency = pricing.currency || "BDT";
+
+  const [customerName, setCustomerName] = useState(user.name || "");
+  const [customerEmail, setCustomerEmail] = useState(user.email || "");
+  const [customerPhone, setCustomerPhone] = useState("");
 
   const [durationUnit, setDurationUnit] = useState(baseUnit); // "hour" | "day"
   const [durationValue, setDurationValue] = useState(4);
@@ -56,8 +64,8 @@ export default function BookingForm({ service }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!durationValue || !division || !district || !city || !address) {
-      alert("Please fill in duration and location details before confirming.");
+    if (!durationValue || !division || !district || !city || !address || !customerName || !customerEmail || !customerPhone) {
+      Swal.fire("Error", "Please fill in all details, including your phone number.", "error");
       return;
     }
 
@@ -65,8 +73,11 @@ export default function BookingForm({ service }) {
 
     try {
       const payload = {
-        serviceSlug: service.slug, // backend looks up service from slug
-        serviceId: service._id, // optional; backend doesn’t need this now
+        customerName,
+        customerEmail,
+        customerPhone,
+        serviceSlug: service.slug,
+        serviceId: service._id,
         durationUnit,
         durationValue,
         division,
@@ -74,7 +85,7 @@ export default function BookingForm({ service }) {
         city,
         area,
         address,
-        estimatedTotal: totalCost, // optional; server recomputes anyway
+        estimatedTotal: totalCost,
       };
 
       const res = await fetch("/api/bookings", {
@@ -84,27 +95,19 @@ export default function BookingForm({ service }) {
         },
         body: JSON.stringify(payload),
       });
-      // console.log(res);
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || "Failed to create booking");
       }
 
-      // alert("Success");
-      Swal.fire("success", "Your Booking has been confirmed", "success")
+      Swal.fire("Success", "Your Booking has been confirmed", "success")
 
       const data = await res.json();
-      // console.log("Booking created:", data);
-
-      // Redirect to My Bookings
       router.push("/my-bookings");
     } catch (error) {
       console.error("Booking error:", error);
-      alert(
-        error.message ||
-          "Something went wrong while creating your booking. Please try again."
-      );
+      Swal.fire("Error", error.message || "Something went wrong", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -117,6 +120,55 @@ export default function BookingForm({ service }) {
     >
       {/* Left: Form fields */}
       <div className="space-y-8">
+        {/* Step 0: User Info */}
+        <section className="rounded-2xl border border-(--color-border-subtle) bg-(--color-surface) p-5 md:p-6 space-y-4 shadow-sm">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                Contact Info
+              </p>
+              <h2 className="text-sm md:text-base font-semibold text-(--color-text-main)">
+                Who is this care for?
+              </h2>
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-(--color-text-main)">Full Name</label>
+              <input
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                className="input input-sm md:input-md w-full border-(--color-border-subtle) focus:ring-2 ring-primary/20 bg-(--color-surface)"
+                placeholder="Manager Name"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-(--color-text-main)">Email Address</label>
+              <input
+                type="email"
+                value={customerEmail}
+                readOnly
+                className="input input-sm md:input-md w-full border-(--color-border-subtle) bg-gray-50 text-(--color-text-muted)"
+                required
+              />
+            </div>
+            <div className="sm:col-span-2 space-y-2">
+              <label className="text-xs font-medium text-(--color-text-main)">Phone Number</label>
+              <input
+                type="tel"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                className="input input-sm md:input-md w-full border-(--color-border-subtle) focus:ring-2 ring-primary/20 bg-(--color-surface)"
+                placeholder="e.g. +880 1XXX-XXXXXX"
+                required
+              />
+            </div>
+          </div>
+        </section>
+
         {/* Step 1: Duration */}
         <section className="rounded-2xl border border-(--color-border-subtle) bg-(--color-surface) p-5 md:p-6 space-y-4">
           <div className="flex items-center justify-between gap-3">
@@ -162,22 +214,20 @@ export default function BookingForm({ service }) {
                 <button
                   type="button"
                   onClick={() => setDurationUnit("hour")}
-                  className={`btn btn-sm md:btn-md join-item flex-1 ${
-                    durationUnit === "hour"
-                      ? "border-none bg-(--color-primary-600) text-(--color-text-invert)"
-                      : "btn-ghost text-(--color-text-muted)"
-                  }`}
+                  className={`btn btn-sm md:btn-md join-item flex-1 ${durationUnit === "hour"
+                    ? "border-none bg-(--color-primary-600) text-(--color-text-invert)"
+                    : "btn-ghost text-(--color-text-muted)"
+                    }`}
                 >
                   Hours
                 </button>
                 <button
                   type="button"
                   onClick={() => setDurationUnit("day")}
-                  className={`btn btn-sm md:btn-md join-item flex-1 ${
-                    durationUnit === "day"
-                      ? "border-none bg-(--color-primary-600) text-(--color-text-invert)"
-                      : "btn-ghost text-(--color-text-muted)"
-                  }`}
+                  className={`btn btn-sm md:btn-md join-item flex-1 ${durationUnit === "day"
+                    ? "border-none bg-(--color-primary-600) text-(--color-text-invert)"
+                    : "btn-ghost text-(--color-text-muted)"
+                    }`}
                 >
                   Days
                 </button>

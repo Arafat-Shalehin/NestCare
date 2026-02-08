@@ -35,6 +35,9 @@ export async function POST(req) {
       city,
       area,
       address,
+      customerName,
+      customerEmail,
+      customerPhone,
     } = body;
 
     // 1) Require auth
@@ -52,6 +55,9 @@ export async function POST(req) {
 
     // 2) Validate input
     if (
+      !customerName ||
+      !customerEmail ||
+      !customerPhone ||
       !serviceSlug ||
       !durationUnit ||
       !durationValue ||
@@ -112,6 +118,12 @@ export async function POST(req) {
         city,
         area: area || "",
         address,
+      },
+
+      customer: {
+        name: customerName,
+        email: customerEmail,
+        phone: customerPhone,
       },
 
       status: "PENDING",

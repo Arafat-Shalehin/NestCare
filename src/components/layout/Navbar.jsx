@@ -69,8 +69,8 @@ export default function Navbar() {
               key={link.href}
               href={link.href}
               className={`text-sm font-medium transition-colors ${isActive(link.href)
-                  ? "text-(--color-primary-600)"
-                  : "text-(--color-text-muted) hover:text-(--color-text-main)"
+                ? "text-(--color-primary-600)"
+                : "text-(--color-text-muted) hover:text-(--color-text-main)"
                 }`}
             >
               {link.label}
@@ -108,6 +108,17 @@ export default function Navbar() {
                       Email: {user.email}
                     </p>
                   </li>
+                  {user.role === "admin" ? (
+                    <li>
+                      <Link href="/admin" className="font-bold text-primary">
+                        Admin Dashboard
+                      </Link>
+                    </li>
+                  ) : (
+                    <li>
+                      <Link href="/my-bookings">My Bookings</Link>
+                    </li>
+                  )}
                   {/* You can add /profile later */}
                   <li>
                     <button
@@ -191,6 +202,17 @@ export default function Navbar() {
                       Email: {user.email}
                     </p>
                   </li>
+                  {user.role === "admin" ? (
+                    <li>
+                      <Link href="/admin" className="font-bold text-primary">
+                        Admin Dashboard
+                      </Link>
+                    </li>
+                  ) : (
+                    <li>
+                      <Link href="/my-bookings">My Bookings</Link>
+                    </li>
+                  )}
                   <li>
                     <button
                       type="button"
