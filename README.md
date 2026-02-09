@@ -1,54 +1,65 @@
-# NestCare – Home Care Booking Platform
+# 🏥 NestCare – Next-Gen Home Care Platform
 
-![NestCare Banner](https://via.placeholder.com/1200x400?text=NestCare+Home+Care+Platform)
+![NestCare Banner](https://via.placeholder.com/1200x400?text=NestCare+Advanced+Healthcare+Platform)
 
-> A comprehensive web application for booking reliable home care services for children, the elderly, and sick family members. Built with modern web technologies for a seamless user experience.
-
----
-
-## 🚀 Overview
-
-**NestCare** is a full-stack booking platform designed to simplify the process of finding and scheduling professional home care. Whether it's a nanny for your child, a caregiver for an elderly parent, or specialized support for a sick relative, NestCare connects users with trusted services.
-
-This project demonstrates a robust implementation of a service marketplace, featuring dynamic pricing, real-time booking management, and a responsive interface.
+> **A state-of-the-art solution for booking and managing professional home care services.**  
+> NestCare bridges the gap between families and caregivers using **AI-driven recommendations**, **real-time location tracking**, and **collaborative care timelines**.
 
 ---
 
-## 🛠 Tech Stack
+## 🚀 Innovation Highlights
 
-### Client-Side
-*   **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
-*   **Language**: JavaScript (ES6+)
-*   **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-*   **UI Components**: [DaisyUI](https://daisyui.com/)
-*   **Animations**: [Framer Motion](https://www.framer.com/motion/)
-*   **State Management**: React Hooks
+This project goes beyond standard e-commerce features to demonstrate advanced software engineering capabilities:
 
-### Server-Side
-*   **Runtime**: Node.js
-*   **Database**: [MongoDB](https://www.mongodb.com/) (Native Driver)
-*   **Authentication**: [NextAuth.js](https://next-auth.js.org/)
-*   **API**: Next.js API Routes
+### 🤖 AI Care Match
+*   **Tech**: OpenAI API, Prompt Engineering, JSON Mode.
+*   **Function**: A conversational wizard that analyzes user needs (patient age, condition, schedule) and recommends the *exact* best service package using LLM logic.
+*   **Why it matters**: Replaces static search with intelligent, context-aware decision support.
+
+### 📍 Live Care Network Map
+*   **Tech**: Leaflet.js, React-Leaflet, Geospatial Data.
+*   **Function**: A real-time interactive map showing active caregivers in the vicinity. Features smooth "FlyTo" animations, auto-complete search for service areas (e.g., Banani, Gulshan), and glassmorphic UI overlays.
+*   **Why it matters**: Demonstrates mastery of interactive frontend libraries and geospatial visualization.
+
+### 📅 Shared Care Timeline (SaaS Architecture)
+*   **Tech**: MongoDB Aggregations, Complex Data Modeling.
+*   **Function**: A live activity feed where families and caregivers collaborate.
+    *   **Dual-Role Simulation**: Toggle between "Family View" and "Caregiver View" to see real-time updates (e.g., "Medication Given," "Lunch Served").
+*   **Why it matters**: showcases ability to build complex, multi-user SaaS workflows with refined UX.
+
+### 🛡️ Enterprise-Grade Admin Dashboard
+*   **Tech**: Next.js Server Actions, Role-Based Access Control (RBAC).
+*   **Function**: A secure command center for administrators.
+    *   **Overview Stats**: Real-time revenue and user growth charts.
+    *   **Booking Management**: Verify or cancel bookings with one click.
+    *   **Service Inventory**: Full CRUD system with meaningful pricing controls.
+    *   **User Authority**: Promote users to Admin or Caregiver roles securely.
 
 ---
 
-## ✨ Key Features
+## ✨ Core Features
 
-### 👤 User Experience
-*   **Responsive Design**: Fully optimized for mobile, tablet, and desktop devices.
-*   **Service Discovery**: Browse services by category (Baby Care, Elderly Care, etc.) with detailed descriptions and featured listings.
-*   **Dynamic Booking System**: 
-    *   Select custom durations (hours/days).
-    *   Real-time cost calculation based on service rates.
-    *   Detailed location and address input.
-*   **Authentication**: Secure user registration and login (email/password & Social Auth).
+*   **Premium Service Discovery**: Modern, card-based UI displaying service slugs, care types, and dynamic pricing (৳/hr or ৳/day).
+*   **Smart Booking System**: comprehensive form capturing duration, location, and contact details (Name, Email, Phone) with automatic cost estimation.
+*   **Secure Authentication**: NextAuth.js integration for secure Email/Password and Social Login.
+*   **Responsive Design**: Mobile-first architecture using Tailwind CSS v4 and DaisyUI.
 
-### ⚙️ Dashboard & Management
-*   **My Bookings**: 
-    *   View all booking requests.
-    *   Track status (Pending, Confirmed, Completed, Cancelled).
-    *   Cancel bookings directly from the dashboard.
-*   **Admin Panel** (Planned): Manage services and user bookings.
+---
+
+## 🛠 Technology Stack
+
+### Frontend Strategy
+*   **Framework**: [Next.js 16](https://nextjs.org/) (App Router & Server Actions)
+*   **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) & [DaisyUI 5](https://daisyui.com/)
+*   **Animations**: [Framer Motion](https://www.framer.com/motion/) (Scroll reveal & micro-interactions)
+*   **Maps**: [Leaflet](https://leafletjs.com/) & React-Leaflet
+*   **Notifications**: [SweetAlert2](https://sweetalert2.github.io/)
+
+### Backend Strategy
+*   **Database**: [MongoDB](https://www.mongodb.com/) (Native Driver for maximum control)
+*   **AI Engine**: [OpenAI API](https://openai.com/) (GPT-4o / GPT-3.5-turbo)
+*   **Auth**: [NextAuth.js v4](https://next-auth.js.org/)
+*   **Email**: Nodemailer (Transactional emails for booking invoices)
 
 ---
 
@@ -58,20 +69,17 @@ This project demonstrates a robust implementation of a service marketplace, feat
 nestcare/
 ├── src/
 │   ├── app/
-│   │   ├── api/            # API Routes (Auth, Bookings)
-│   │   ├── services/       # Service Listing & Details
-│   │   ├── booking/        # Booking Process
-│   │   ├── my-bookings/    # User Dashboard
-│   │   └── ...
-│   ├── components/
-│   │   ├── layout/         # Navbar, Footer
-│   │   ├── home/           # Homepage Sections
-│   │   └── booking/        # Booking Forms & UI
-│   ├── lib/
-│   │   └── dbConnect.js    # Database Connection
-│   └── ...
+│   │   ├── admin/          # 🛡️ Protected Admin Dashboard routes
+│   │   ├── api/            # Server-side API endpoints
+│   │   ├── live-map/       # 📍 Leaflet Map implementation
+│   │   ├── find-match/     # 🤖 AI Wizard logic
+│   │   ├── services/       # Service listing & Dynamic details
+│   │   └── my-bookings/    # User Dashboard & Shared Timeline
+│   ├── actions/            # Server Actions (Data mutations)
+│   ├── components/         # Reusable UI Architecture
+│   └── lib/                # Database & Auth utilities
 ├── public/                 # Static Assets
-└── package.json            # Dependencies & Scripts
+└── package.json            # Dependencies
 ```
 
 ---
@@ -79,14 +87,15 @@ nestcare/
 ## 🚀 Getting Started
 
 ### Prerequisites
-*   Node.js (v18 or higher recommended)
-*   MongoDB Instance (Local or Atlas)
+*   Node.js (v18+)
+*   MongoDB URI (Local or Atlas)
+*   OpenAI API Key (Optional, for AI Match feature)
 
 ### Installation
 
 1.  **Clone the repository**
     ```bash
-    git clone https://github.com/yourusername/nestcare.git
+    git clone https://github.com/your-username/nestcare.git
     cd nestcare
     ```
 
@@ -95,48 +104,42 @@ nestcare/
     npm install
     ```
 
-3.  **Set up Environment Variables**
-    Create a `.env.local` file in the root directory and add the following:
-
+3.  **Configure Environment**
+    Create a `.env.local` file:
     ```env
     # Database
-    MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/nestcare?retryWrites=true&w=majority
+    MONGODB_URI=your_mongodb_connection_string
     MONGODB_DB=nestcare
 
-    # Authentication
+    # Auth
     NEXTAUTH_URL=http://localhost:3000
-    NEXTAUTH_SECRET=your_super_secret_key
+    NEXTAUTH_SECRET=your_auth_secret
 
-    # OAuth (Optional)
-    GOOGLE_CLIENT_ID=your_google_client_id
-    GOOGLE_CLIENT_SECRET=your_google_client_secret
+    # AI (Optional)
+    OPENAI_API_KEY=your_openai_key
     ```
 
-4.  **Run the development server**
+4.  **Run Development Server**
     ```bash
     npm run dev
     ```
-
-    Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
----
-
-## 🤝 Contributing
-
-This is a personal portfolio project, but suggestions and feedback are welcome!
-
-1.  Fork the Project
-2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the Branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
+    Visit `http://localhost:3000` to see the app in action.
 
 ---
 
-## 📝 License
+## 🔮 Future Roadmap
 
-This project is created for educational and portfolio purposes. All rights reserved by the creator.
+*   **Biometric Clock-In**: WebCam-based verification for caregivers upon arrival.
+*   **AI Voice Reports**: Converting caregiver voice notes into medical summaries for families.
+*   **Payment Gateway**: SSLCommerz / Stripe integration for secure checkout.
 
 ---
 
-*Made with ❤️ by [Arafat Shalehin]*
+## 🤝 Contributing / Contact
+
+This project is a portfolio highlight by **Arafat Shalehin**.
+*   **LinkedIn**: [https://www.linkedin.com/in/md-arafat-shalehin/](https://www.linkedin.com/in/md-arafat-shalehin/)
+*   **Email**: [md.arafatshalehin@gmail.com](mailto:md.arafatshalehin@gmail.com)
+
+---
+*© 2026 NestCare. Built for excellence.*
