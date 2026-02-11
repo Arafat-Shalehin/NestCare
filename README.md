@@ -59,7 +59,6 @@ This project goes beyond standard e-commerce features to demonstrate advanced so
 *   **Database**: [MongoDB](https://www.mongodb.com/) (Native Driver for maximum control)
 *   **AI Engine**: [OpenAI API](https://openai.com/) (GPT-4o / GPT-3.5-turbo)
 *   **Auth**: [NextAuth.js v4](https://next-auth.js.org/)
-*   **Email**: Nodemailer (Transactional emails for booking invoices)
 
 ---
 
@@ -139,7 +138,7 @@ nestcare/
 
 This project is a portfolio highlight by **Arafat Shalehin**.
 *   **LinkedIn**: [https://www.linkedin.com/in/md-arafat-shalehin/](https://www.linkedin.com/in/md-arafat-shalehin/)
-*   **Email**: [md.arafatshalehin@gmail.com](mailto:md.arafatshalehin@gmail.com)
+*   **Email**: [md.arafatshalehin@gmail.com](md.arafatshalehin@gmail.com)
 
 ---
 *© 2026 NestCare. Built for excellence.*
