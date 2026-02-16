@@ -11,7 +11,7 @@ const navLinks = [
   { href: "/find-match", label: "Find My Match" },
   { href: "/live-map", label: "Live Map" },
   { href: "/about", label: "About" },
-  { href: "/my-bookings", label: "My Bookings" },
+  { href: "/users/my-bookings", label: "My Bookings" },
 ];
 
 export default function Navbar() {
