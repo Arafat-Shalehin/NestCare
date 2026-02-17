@@ -21,6 +21,8 @@ export default function AdminServices() {
         }
     };
 
+    // console.log(services);
+
     useEffect(() => {
         fetchServices();
     }, []);
@@ -102,7 +104,7 @@ export default function AdminServices() {
                         <div className="pt-4 border-t border-(--color-border-subtle) flex items-center justify-between">
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-(--color-text-soft)">Rate</p>
-                                <p className="text-xl font-black text-primary">৳{s.pricePerUnit}<span className="text-xs text-(--color-text-soft)">/{s.unit}</span></p>
+                                <p className="text-xl font-black text-primary">৳{s.pricing.baseRate}<span className="text-xs text-(--color-text-soft)">/{s.pricing.unit}</span></p>
                             </div>
                             <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${s.status === 'active' ? 'bg-success-100 text-success-500' : 'bg-gray-100 text-gray-500'}`}>
                                 {s.status}
