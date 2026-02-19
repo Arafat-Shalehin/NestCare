@@ -17,7 +17,6 @@ const menuItems = [
   { label: "Overview", href: "/admin", icon: <FaChartBar /> },
   { label: "Bookings", href: "/admin/bookings", icon: <FaCalendarCheck /> },
   { label: "Services", href: "/admin/services", icon: <FaHandsHelping /> },
-  { label: "Users", href: "/admin/users", icon: <FaUsers /> },
 ];
 
 export default function AdminLayout({ children }) {

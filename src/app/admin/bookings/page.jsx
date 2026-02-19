@@ -24,6 +24,8 @@ export default function AdminBookings() {
         fetchBookings();
     }, []);
 
+    // console.log(bookings);
+
     const handleStatusChange = async (id, newStatus) => {
         const result = await Swal.fire({
             title: 'Update Status?',
