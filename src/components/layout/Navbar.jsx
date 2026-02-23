@@ -108,18 +108,13 @@ export default function Navbar() {
                       Email: {user.email}
                     </p>
                   </li>
-                  {user.role === "admin" ? (
+                  {user.role === "admin" && (
                     <li>
                       <Link href="/admin" className="font-bold text-primary">
                         Admin Dashboard
                       </Link>
                     </li>
-                  ) : (
-                    <li>
-                      <Link href="/my-bookings">My Bookings</Link>
-                    </li>
                   )}
-                  {/* You can add /profile later */}
                   <li>
                     <button
                       type="button"
@@ -202,15 +197,11 @@ export default function Navbar() {
                       Email: {user.email}
                     </p>
                   </li>
-                  {user.role === "admin" ? (
+                  {user.role === "admin" && (
                     <li>
                       <Link href="/admin" className="font-bold text-primary">
                         Admin Dashboard
                       </Link>
-                    </li>
-                  ) : (
-                    <li>
-                      <Link href="/my-bookings">My Bookings</Link>
                     </li>
                   )}
                   <li>
