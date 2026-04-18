@@ -1,3 +1,4 @@
+import "leaflet/dist/leaflet.css";
 import MapWrapper from "@/components/map/MapWrapper";
 
 export const metadata = {

@@ -4,7 +4,8 @@ import { collections, dbConnect } from "@/lib/dbConnect";
 import { ObjectId } from "mongodb";
 
 export const getServices = async () => {
-  const services = await dbConnect(collections.SERVICES).find().toArray();
+  const collection = await dbConnect(collections.SERVICES);
+  const services = await collection.find().toArray();
 
   return JSON.parse(JSON.stringify(services));
 };
@@ -16,7 +17,8 @@ export const getSingleServices = async (id) => {
   }
 
   const query = { _id: new ObjectId(id) };
-  const services = await dbConnect(collections.SERVICES).findOne(query);
+  const collection = await dbConnect(collections.SERVICES);
+  const services = await collection.findOne(query);
   if (!services) return null;
 
   return JSON.parse(

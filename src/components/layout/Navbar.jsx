@@ -80,69 +80,69 @@ export default function Navbar() {
 
         {/* Right: Auth actions (desktop) */}
         <div className="hidden lg:flex items-center gap-3">
-          {status === "loading" && (
-            <div className="h-9 w-9 rounded-full bg-(--color-bg-soft) animate-pulse" />
-          )}
-
-          {status === "authenticated" && user && (
-            <div className="flex items-center gap-3">
-              {/* User dropdown */}
-              <div className="dropdown dropdown-end">
-                <button
-                  tabIndex={0}
-                  className="btn btn-ghost btn-circle avatar"
-                >
-                  <div className="w-9 rounded-full bg-(--color-primary-600) text-(--color-text-invert) flex items-center justify-center text-xs font-semibold">
-                    {getInitials(user?.name, user?.email)}
-                  </div>
-                </button>
-                <ul
-                  tabIndex={0}
-                  className="menu menu-sm dropdown-content mt-3 w-56 rounded-box bg-(--color-surface) p-2 shadow-lg border border-(--color-border-subtle)"
-                >
-                  <li className="py-2 border-b border-(--color-border-subtle) mb-1">
-                    <p className="text-sm font-semibold text-(--color-text-main)">
-                      Name: {user.name || "Account"}
-                    </p>
-                    <p className="text-[11px] text-(--color-text-soft) truncate">
-                      Email: {user.email}
-                    </p>
-                  </li>
-                  {user.role === "admin" && (
-                    <li>
-                      <Link href="/admin" className="font-bold text-primary">
-                        Admin Dashboard
-                      </Link>
-                    </li>
-                  )}
-                  <li>
-                    <button
-                      type="button"
-                      onClick={() => signOut({ callbackUrl: "/" })}
-                      className="text-(--color-error-500)"
-                    >
-                      Sign out
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          )}
-
-          {status !== "authenticated" && (
+          {status === "loading" ? (
+            <div className="h-9 w-24 rounded-full bg-(--color-bg-soft) animate-pulse" />
+          ) : (
             <>
-              <Link
-                href="/login"
-                className="btn btn-outline btn-sm text-(--color-text-muted) hover:bg-(--color-bg-soft)"
-              >
-                Log in
-              </Link>
-              <Link
-                href="/register"
-                className="btn btn-sm border-none bg-(--color-primary-600) text-(--color-text-invert) hover:bg-(--color-primary-700) shadow-sm"
-              >
-                Get Started
-              </Link>
+              {status === "authenticated" && user ? (
+                <div className="flex items-center gap-3">
+                  {/* User dropdown */}
+                  <div className="dropdown dropdown-end">
+                    <button
+                      tabIndex={0}
+                      className="btn btn-ghost btn-circle avatar"
+                    >
+                      <div className="w-9 rounded-full bg-(--color-primary-600) text-(--color-text-invert) flex items-center justify-center text-xs font-semibold">
+                        {getInitials(user?.name, user?.email)}
+                      </div>
+                    </button>
+                    <ul
+                      tabIndex={0}
+                      className="menu menu-sm dropdown-content mt-3 w-56 rounded-box bg-(--color-surface) p-2 shadow-lg border border-(--color-border-subtle)"
+                    >
+                      <li className="py-2 border-b border-(--color-border-subtle) mb-1">
+                        <p className="text-sm font-semibold text-(--color-text-main)">
+                          Name: {user.name || "Account"}
+                        </p>
+                        <p className="text-[11px] text-(--color-text-soft) truncate">
+                          Email: {user.email}
+                        </p>
+                      </li>
+                      {user.role === "admin" && (
+                        <li>
+                          <Link href="/admin" className="font-bold text-primary">
+                            Admin Dashboard
+                          </Link>
+                        </li>
+                      )}
+                      <li>
+                        <button
+                          type="button"
+                          onClick={() => signOut({ callbackUrl: "/" })}
+                          className="text-(--color-error-500)"
+                        >
+                          Sign out
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="btn btn-outline btn-sm text-(--color-text-muted) hover:bg-(--color-bg-soft)"
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="btn btn-sm border-none bg-(--color-primary-600) text-(--color-text-invert) hover:bg-(--color-primary-700) shadow-sm"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
             </>
           )}
         </div>

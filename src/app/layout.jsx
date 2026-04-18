@@ -9,15 +9,13 @@ const inter = Inter({
   variable: "--font-sans",
 });
 
-export default async function RootLayout({ children }) {
-  const session = await getServerSession(authOptions);
-
+export default function RootLayout({ children }) {
   return (
     <html lang="en" data-theme="light">
       <body
         className={`${inter.variable} min-h-screen bg-(--color-bg-base) text-(--color-text-main)`}
       >
-        <NextAuthProvider session={session}>{children}</NextAuthProvider>
+        <NextAuthProvider>{children}</NextAuthProvider>
       </body>
     </html>
   );
