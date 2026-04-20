@@ -4,6 +4,7 @@ import { collections, dbConnect } from "@/lib/dbConnect";
 import { ObjectId } from "mongodb";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
+import { BookingStatusSchema, ServicePackageSchema, UserUpdateSchema, IdSchema } from "@/lib/validations";
 
 // Security helper: Throws error if not admin
 async function ensureAdmin() {
@@ -57,39 +58,75 @@ export async function getAllBookings() {
 }
 
 export async function updateBookingStatus(id, status) {
-    await ensureAdmin();
-    const bookingsCollection = await dbConnect(collections.BOOKINGS);
+    try {
+        await ensureAdmin();
 
-    await bookingsCollection.updateOne(
-        { _id: new ObjectId(id) },
-        { $set: { status, updatedAt: new Date() } }
-    );
+        const validation = BookingStatusSchema.safeParse({ id, status });
+        if (!validation.success) {
+            return {
+                success: false,
+                errors: validation.error.flatten().fieldErrors,
+            };
+        }
 
-    return { success: true };
+        const bookingsCollection = await dbConnect(collections.BOOKINGS);
+        await bookingsCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { status, updatedAt: new Date() } }
+        );
+
+        return { success: true };
+    } catch (error) {
+        console.error("updateBookingStatus error:", error);
+        return { success: false, message: error.message || "Failed to update booking status" };
+    }
 }
 
 /** 🛠 Service Management */
 export async function manageService(id, data) {
-    await ensureAdmin();
-    const servicesCollection = await dbConnect(collections.SERVICES);
+    try {
+        await ensureAdmin();
 
-    if (id) {
-        // Update
-        await servicesCollection.updateOne(
-            { _id: new ObjectId(id) },
-            { $set: { ...data, updatedAt: new Date() } }
-        );
-    } else {
-        // Create
-        await servicesCollection.insertOne({
-            ...data,
-            status: "active",
-            createdAt: new Date(),
-            updatedAt: new Date()
-        });
+        // Validate data
+        const validation = ServicePackageSchema.safeParse(data);
+        if (!validation.success) {
+            return {
+                success: false,
+                errors: validation.error.flatten().fieldErrors,
+            };
+        }
+
+        // Validate id if present
+        if (id) {
+            const idValidation = IdSchema.safeParse(id);
+            if (!idValidation.success) {
+                return { success: false, message: "Invalid Service ID" };
+            }
+        }
+
+        const servicesCollection = await dbConnect(collections.SERVICES);
+
+        if (id) {
+            // Update
+            await servicesCollection.updateOne(
+                { _id: new ObjectId(id) },
+                { $set: { ...data, updatedAt: new Date() } }
+            );
+        } else {
+            // Create
+            await servicesCollection.insertOne({
+                ...data,
+                status: "active",
+                createdAt: new Date(),
+                updatedAt: new Date()
+            });
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error("manageService error:", error);
+        return { success: false, message: error.message || "Failed to manage service" };
     }
-
-    return { success: true };
 }
 
 /** 🧑‍🤝‍🧑 User Management */
@@ -107,13 +144,26 @@ export async function getAllUsers() {
 }
 
 export async function updateUserRole(id, role) {
-    await ensureAdmin();
-    const usersCollection = await dbConnect(collections.USERS);
+    try {
+        await ensureAdmin();
 
-    await usersCollection.updateOne(
-        { _id: new ObjectId(id) },
-        { $set: { role, updatedAt: new Date() } }
-    );
+        const validation = UserUpdateSchema.safeParse({ id, role });
+        if (!validation.success) {
+            return {
+                success: false,
+                errors: validation.error.flatten().fieldErrors,
+            };
+        }
 
-    return { success: true };
+        const usersCollection = await dbConnect(collections.USERS);
+        await usersCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { role, updatedAt: new Date() } }
+        );
+
+        return { success: true };
+    } catch (error) {
+        console.error("updateUserRole error:", error);
+        return { success: false, message: error.message || "Failed to update user role" };
+    }
 }
