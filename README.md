@@ -1,6 +1,6 @@
 # 🏥 NestCare – Next-Gen Home Care Platform
 
-![NestCare Banner](/HomePage.png)
+![NestCare Banner](/public/HomePage.png)
 
 > **A state-of-the-art solution for booking and managing professional home care services.**  
 > NestCare bridges the gap between families and caregivers using **AI-driven recommendations**, **real-time location tracking**, and **collaborative care timelines**.
