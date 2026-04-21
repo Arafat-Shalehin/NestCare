@@ -57,3 +57,13 @@ export const BookingSchema = z.object({
   area: z.string().optional(),
   address: z.string().min(5, "Full address is required"),
 });
+
+/**
+ * AI Recommendation Output Validation (JSON Mode)
+ */
+export const AIOutputSchema = z.object({
+  serviceSlug: z.string().min(1, "Service slug is required"),
+  confidence: z.number().min(0, "Confidence must be at least 0").max(1, "Confidence cannot exceed 1"),
+  reason: z.string().min(1, "Reasoning is required"),
+});
+
