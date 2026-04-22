@@ -7,14 +7,18 @@ import { ObjectId } from "mongodb";
  * Update booking status (Cancel, Confirm, Complete etc.)
  * Body: { status: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED" }
  */
+import { BookingStatusSchema } from "@/lib/schemas/booking";
+import { IdSchema } from "@/lib/schemas/common";
+
 export async function PATCH(req, { params }) {
   try {
     const { id } = await params;
-    // console.log("Cancel ID: ", id);
 
-    if (!id) {
+    // 1) Validate ID
+    const idValidation = IdSchema.safeParse(id);
+    if (!idValidation.success) {
       return NextResponse.json(
-        { error: "Invalid booking id." },
+        { error: "Invalid booking ID format." },
         { status: 400 }
       );
     }
@@ -22,10 +26,15 @@ export async function PATCH(req, { params }) {
     const body = await req.json();
     const { status } = body;
 
-    const allowedStatuses = ["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"];
-    if (!status || !allowedStatuses.includes(status)) {
-      return NextResponse.json({ error: "Invalid status." }, { status: 400 });
+    // 2) Validate Status
+    const statusValidation = BookingStatusSchema.safeParse(status);
+    if (!statusValidation.success) {
+      return NextResponse.json(
+        { error: "Invalid status value." },
+        { status: 400 }
+      );
     }
+
 
     const bookingsCollection = await dbConnect(collections.BOOKINGS);
 

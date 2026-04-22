@@ -20,18 +20,30 @@ export async function getTimelineEvents(bookingId) {
     }));
 }
 
+import { TimelineEventSchema } from "@/lib/schemas/timeline";
+import { IdSchema } from "@/lib/schemas/common";
+
 export async function addTimelineEvent(bookingId, eventData) {
-    if (!bookingId) throw new Error("Booking ID is required");
+    const idValidation = IdSchema.safeParse(bookingId);
+    if (!idValidation.success) throw new Error("Invalid Booking ID format");
+
+    const validation = TimelineEventSchema.safeParse(eventData);
+    if (!validation.success) {
+        throw new Error(validation.error.errors[0].message);
+    }
+
+    const { type, title, note, addedBy } = validation.data;
     const timelineCollection = await dbConnect(collections.TIMELINE);
 
     const newEvent = {
         bookingId: new ObjectId(bookingId),
-        type: eventData.type || "update", // 'arrival', 'feeding', 'medication', 'activity', 'departure'
-        title: eventData.title,
-        note: eventData.note || "",
+        type,
+        title,
+        note,
         timestamp: new Date(),
-        addedBy: eventData.addedBy || "Caregiver",
+        addedBy,
     };
+
 
     const result = await timelineCollection.insertOne(newEvent);
 

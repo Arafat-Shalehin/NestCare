@@ -1,7 +1,8 @@
 "use server";
 
 import OpenAI from "openai";
-import { AIOutputSchema } from "@/lib/validations";
+import { AIOutputSchema } from "@/lib/schemas/ai";
+
 
 /**
  * Internal helper to execute OpenAI calls with structured JSON output

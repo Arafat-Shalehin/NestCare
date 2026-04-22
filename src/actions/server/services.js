@@ -10,11 +10,14 @@ export const getServices = async () => {
   return JSON.parse(JSON.stringify(services));
 };
 
+import { IdSchema } from "@/lib/schemas/common";
+
 export const getSingleServices = async (id) => {
-  // console.log(id);
-  if (id.length != 24) {
-    return {};
+  const validation = IdSchema.safeParse(id);
+  if (!validation.success) {
+    return null;
   }
+
 
   const query = { _id: new ObjectId(id) };
   const collection = await dbConnect(collections.SERVICES);

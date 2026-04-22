@@ -22,9 +22,20 @@ function computePerUnitRate(baseRate, baseUnit, durationUnit) {
   return baseRate;
 }
 
+import { BookingPayloadSchema } from "@/lib/schemas/booking";
+
 export async function POST(req) {
   try {
     const body = await req.json();
+
+    // 1) Validate with Zod
+    const validation = BookingPayloadSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: validation.error.errors[0].message, details: validation.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
 
     const {
       serviceSlug,
@@ -38,39 +49,10 @@ export async function POST(req) {
       customerName,
       customerEmail,
       customerPhone,
-    } = body;
+    } = validation.data;
 
-    // 1) Require auth
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { error: "You must be logged in to create a booking." },
-        { status: 401 }
-      );
-    }
+    // 2) Require auth
 
-    const userId = session.user.id;
-    const userEmail = session.user.email;
-    const userName = session.user.name || "";
-
-    // 2) Validate input
-    if (
-      !customerName ||
-      !customerEmail ||
-      !customerPhone ||
-      !serviceSlug ||
-      !durationUnit ||
-      !durationValue ||
-      !division ||
-      !district ||
-      !city ||
-      !address
-    ) {
-      return NextResponse.json(
-        { error: "Missing required fields for booking." },
-        { status: 400 }
-      );
-    }
 
     // 3) Get service & pricing
     const service = await getServiceBySlug(serviceSlug);

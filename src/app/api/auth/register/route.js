@@ -7,38 +7,24 @@ import {
   findUserByEmailOrNid,
 } from "@/lib/auth";
 
+import { RegisterSchema } from "@/lib/schemas/auth";
+
 export async function POST(req) {
   try {
     const body = await req.json();
 
-    const { nid, name, email, contact, password } = body;
-
-    if (!nid || !name || !email || !contact || !password) {
+    // 1) Validate with Zod
+    const validation = RegisterSchema.safeParse(body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: "All fields are required." },
+        { error: validation.error.errors[0].message, details: validation.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
 
-    // Basic email format check
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: "Invalid email address." },
-        { status: 400 }
-      );
-    }
+    const { nid, name, email, contact, password } = validation.data;
 
-    // Password validation
-    const passCheck = await validatePassword(password);
-    if (!passCheck.ok) {
-      return NextResponse.json(
-        { error: passCheck.errors.join(" ") },
-        { status: 400 }
-      );
-    }
-
-    // Check if user already exists
+    // 2) Check if user already exists
     const existing = await findUserByEmailOrNid(email, nid);
     if (existing) {
       return NextResponse.json(
@@ -46,6 +32,7 @@ export async function POST(req) {
         { status: 409 }
       );
     }
+
 
     // Hash password
     const passwordHash = await hashPassword(password);

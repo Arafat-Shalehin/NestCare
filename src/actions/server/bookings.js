@@ -6,7 +6,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { getServiceBySlug } from "@/actions/server/services";
 import { sendBookingInvoiceEmail } from "@/lib/sendEmail";
-import { BookingSchema, IdSchema } from "@/lib/validations";
+
+// Centralized Schemas
+import { BookingPayloadSchema } from "@/lib/schemas/booking";
+import { IdSchema } from "@/lib/schemas/common";
 
 /**
  * Utility to normalize rates between different duration units
@@ -35,11 +38,11 @@ export async function createBooking(data) {
     // 1) Auth Check
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
-      return { success: false, message: "Unauthorized: Please log in to book care." };
+      return { success: false, errors: { auth: ["Unauthorized: Please log in to book care."] } };
     }
 
     // 2) Validation
-    const validation = BookingSchema.safeParse(data);
+    const validation = BookingPayloadSchema.safeParse(data);
     if (!validation.success) {
       return {
         success: false,
@@ -51,7 +54,7 @@ export async function createBooking(data) {
     const { serviceSlug, durationUnit, durationValue } = validation.data;
     const service = await getServiceBySlug(serviceSlug);
     if (!service) {
-      return { success: false, message: "The selected care service is currently unavailable." };
+      return { success: false, errors: { service: ["The selected care service is currently unavailable."] } };
     }
 
     const pricing = service.pricing || {};
@@ -76,16 +79,16 @@ export async function createBooking(data) {
       totalCost,
       currency: pricing.currency || "BDT",
       location: {
-        division: data.division,
-        district: data.district,
-        city: data.city,
-        area: data.area || "",
-        address: data.address,
+        division: validation.data.division,
+        district: validation.data.district,
+        city: validation.data.city,
+        area: validation.data.area || "",
+        address: validation.data.address,
       },
       customer: {
-        name: data.customerName,
-        email: data.customerEmail,
-        phone: data.customerPhone,
+        name: validation.data.customerName,
+        email: validation.data.customerEmail,
+        phone: validation.data.customerPhone,
       },
       status: "PENDING",
       createdAt: now,
@@ -111,7 +114,7 @@ export async function createBooking(data) {
 
   } catch (error) {
     console.error("createBooking action error:", error);
-    return { success: false, message: "An unexpected error occurred while processing your booking." };
+    return { success: false, errors: { form: ["An unexpected error occurred while processing your booking."] } };
   }
 }
 
