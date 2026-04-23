@@ -1,6 +1,6 @@
 "use server";
 
-import { collections, dbConnect } from "@/lib/dbConnect";
+import { collections, dbConnect, getMongoClient } from "@/lib/dbConnect";
 import { ObjectId } from "mongodb";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
@@ -31,90 +31,131 @@ function computePerUnitRate(baseRate, baseUnit, durationUnit) {
 }
 
 /**
- * Create a new booking (Safe Action)
+ * Create a new booking (Hardened with Transactions, Conflict Detection & Idempotency)
  */
 export async function createBooking(data) {
+  const client = await getMongoClient();
+  const session = client.startSession();
+
   try {
-    // 1) Auth Check
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    // 1) Auth & Validation (Quick fail before transaction)
+    const authSession = await getServerSession(authOptions);
+    if (!authSession || !authSession.user) {
       return { success: false, errors: { auth: ["Unauthorized: Please log in to book care."] } };
     }
 
-    // 2) Validation
     const validation = BookingPayloadSchema.safeParse(data);
     if (!validation.success) {
-      return {
-        success: false,
-        errors: validation.error.flatten().fieldErrors,
+      return { success: false, errors: validation.error.flatten().fieldErrors };
+    }
+
+    const { serviceSlug, caregiverId, startTime, durationUnit, durationValue, idempotencyKey } = validation.data;
+
+    // 2) Idempotency Check (Fast check)
+    const bookingsCollection = await dbConnect(collections.BOOKINGS);
+    const existing = await bookingsCollection.findOne({ idempotencyKey });
+    if (existing) {
+      return { 
+        success: true, 
+        bookingId: existing._id.toString(), 
+        message: "Duplicate request handled (Idempotent)." 
       };
     }
 
-    // 3) Prep Data
-    const { serviceSlug, durationUnit, durationValue } = validation.data;
-    const service = await getServiceBySlug(serviceSlug);
-    if (!service) {
-      return { success: false, errors: { service: ["The selected care service is currently unavailable."] } };
+    // 3) Prep Timing Range
+    const start = new Date(startTime);
+    const durationMs = durationUnit === "hour" ? durationValue * 3600000 : durationValue * 86400000;
+    const end = new Date(start.getTime() + durationMs);
+
+    let createdBooking = null;
+
+    // 4) Execute Atomic Transaction
+    await session.withTransaction(async () => {
+      // A) Cross-reference Service
+      const service = await getServiceBySlug(serviceSlug);
+      if (!service) throw new Error("SERVICE_UNAVAILABLE");
+
+      // B) PRE-INSERT CONFLICT DETECTION (Caregiver overlap)
+      const conflict = await bookingsCollection.findOne({
+        caregiverId: new ObjectId(caregiverId),
+        status: { $in: ["PENDING", "CONFIRMED"] },
+        $or: [
+          { 
+            startTime: { $lt: end }, 
+            endTime: { $gt: start } 
+          }
+        ]
+      }, { session });
+
+      if (conflict) {
+        throw new Error("CAREGIVER_BUSY: The selected caregiver has an overlapping booking.");
+      }
+
+      // C) Pricing Calculation
+      const pricing = service.pricing || {};
+      const perUnitRate = computePerUnitRate(Number(pricing.baseRate || 0), pricing.unit || "hour", durationUnit);
+      const totalCost = durationValue * perUnitRate;
+
+      const doc = {
+        userId: new ObjectId(authSession.user.id),
+        serviceId: new ObjectId(service._id),
+        serviceSlug: service.slug,
+        serviceName: service.name,
+        caregiverId: new ObjectId(caregiverId),
+        startTime: start,
+        endTime: end,
+        durationUnit,
+        durationValue,
+        perUnitRate,
+        totalCost,
+        currency: pricing.currency || "BDT",
+        location: {
+          division: validation.data.division,
+          district: validation.data.district,
+          city: validation.data.city,
+          area: validation.data.area || "",
+          address: validation.data.address,
+        },
+        customer: {
+          name: validation.data.customerName,
+          email: validation.data.customerEmail,
+          phone: validation.data.customerPhone,
+        },
+        status: "PENDING",
+        idempotencyKey,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const result = await bookingsCollection.insertOne(doc, { session });
+      createdBooking = { ...doc, _id: result.insertedId };
+    });
+
+    // 5) Standardize Response & Trigger Async Notification
+    if (createdBooking) {
+      sendBookingInvoiceEmail({
+        to: authSession.user.email,
+        userName: authSession.user.name || "Valued Member",
+        booking: { ...createdBooking, _id: createdBooking._id.toString() },
+        service: await getServiceBySlug(serviceSlug),
+      }).catch(err => console.error("Email notification deferred failure:", err));
+
+      return { 
+        success: true, 
+        bookingId: createdBooking._id.toString(),
+        message: "Booking confirmed safely!" 
+      };
     }
 
-    const pricing = service.pricing || {};
-    const perUnitRate = computePerUnitRate(
-      Number(pricing.baseRate || 0),
-      pricing.unit || "hour",
-      durationUnit
-    );
-    const totalCost = durationValue * perUnitRate;
-
-    const bookingsCollection = await dbConnect(collections.BOOKINGS);
-    const now = new Date();
-
-    const doc = {
-      userId: new ObjectId(session.user.id),
-      serviceId: new ObjectId(service._id),
-      serviceSlug: service.slug,
-      serviceName: service.name,
-      durationUnit,
-      durationValue,
-      perUnitRate,
-      totalCost,
-      currency: pricing.currency || "BDT",
-      location: {
-        division: validation.data.division,
-        district: validation.data.district,
-        city: validation.data.city,
-        area: validation.data.area || "",
-        address: validation.data.address,
-      },
-      customer: {
-        name: validation.data.customerName,
-        email: validation.data.customerEmail,
-        phone: validation.data.customerPhone,
-      },
-      status: "PENDING",
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    // 4) DB Persistence
-    const result = await bookingsCollection.insertOne(doc);
-
-    // 5) Async Email (don't block the UI)
-    sendBookingInvoiceEmail({
-      to: session.user.email,
-      userName: session.user.name || "Valued Member",
-      booking: { ...doc, _id: result.insertedId.toString() },
-      service,
-    }).catch((err) => console.error("Failsafe: Email notification failed", err));
-
-    return { 
-      success: true, 
-      bookingId: result.insertedId.toString(),
-      message: "Booking request submitted successfully!" 
-    };
-
   } catch (error) {
-    console.error("createBooking action error:", error);
-    return { success: false, errors: { form: ["An unexpected error occurred while processing your booking."] } };
+    console.error("Atomic Booking Failed:", error.message);
+    const userFriendlyMessage = error.message === "CAREGIVER_BUSY" 
+      ? "Caregiver is unavailable for the selected time slot." 
+      : "Could not process booking. Please try again.";
+    
+    return { success: false, errors: { form: [userFriendlyMessage] } };
+  } finally {
+    await session.endSession();
   }
 }
 

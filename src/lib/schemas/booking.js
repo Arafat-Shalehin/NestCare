@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { IdSchema } from "./common";
+import { IdSchema } from "./common.js";
+
 
 export const BookingStatusSchema = z.enum(["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"]);
 
@@ -15,7 +16,11 @@ export const BookingPayloadSchema = z.object({
   city: z.string().min(1, "City is required"),
   area: z.string().optional(),
   address: z.string().min(5, "Full address is required"),
+  caregiverId: IdSchema.describe("Assigned caregiver ID"),
+  startTime: z.string().datetime("Invalid start time format (ISO expected)"),
+  idempotencyKey: z.string().min(8, "Valid idempotency key is required"),
 });
+
 
 export const AdminBookingStatusUpdateSchema = z.object({
   id: IdSchema,

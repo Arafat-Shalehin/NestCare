@@ -1,143 +1,28 @@
 import { NextResponse } from "next/server";
-import { collections, dbConnect } from "@/lib/dbConnect";
-import { ObjectId } from "mongodb";
-import { getServiceBySlug } from "@/actions/server/services";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
-import { sendBookingInvoiceEmail } from "@/lib/sendEmail";
+import { createBooking } from "@/actions/server/bookings";
 
-function computePerUnitRate(baseRate, baseUnit, durationUnit) {
-  if (!baseRate) return 0;
-
-  if (durationUnit === "hour") {
-    if (baseUnit === "day") return baseRate / 24;
-    return baseRate;
-  }
-
-  if (durationUnit === "day") {
-    if (baseUnit === "hour") return baseRate * 24;
-    return baseRate;
-  }
-
-  return baseRate;
-}
-
-import { BookingPayloadSchema } from "@/lib/schemas/booking";
-
+/**
+ * POST /api/bookings
+ * Hardened API entry point using shared atomic logic
+ */
 export async function POST(req) {
   try {
     const body = await req.json();
 
-    // 1) Validate with Zod
-    const validation = BookingPayloadSchema.safeParse(body);
-    if (!validation.success) {
-      return NextResponse.json(
-        { error: validation.error.errors[0].message, details: validation.error.flatten().fieldErrors },
-        { status: 400 }
-      );
+    // Delegate to the hardened Server Action logic
+    const result = await createBooking(body);
+
+    if (result.success) {
+      return NextResponse.json({ 
+        id: result.bookingId, 
+        message: result.message 
+      }, { status: 201 });
+    } else {
+      return NextResponse.json({ 
+        error: result.errors?.form?.[0] || "Validation failed", 
+        details: result.errors 
+      }, { status: 400 });
     }
-
-    const {
-      serviceSlug,
-      durationUnit,
-      durationValue,
-      division,
-      district,
-      city,
-      area,
-      address,
-      customerName,
-      customerEmail,
-      customerPhone,
-    } = validation.data;
-
-    // 2) Require auth
-
-
-    // 3) Get service & pricing
-    const service = await getServiceBySlug(serviceSlug);
-    if (!service) {
-      return NextResponse.json(
-        { error: "Service not found." },
-        { status: 404 }
-      );
-    }
-
-    const pricing = service.pricing || {};
-    const baseRate = Number(pricing.baseRate || 0);
-    const baseUnit = pricing.unit || "hour";
-    const currency = pricing.currency || "BDT";
-
-    const perUnitRate = computePerUnitRate(baseRate, baseUnit, durationUnit);
-    if (!perUnitRate || !durationValue || durationValue <= 0) {
-      return NextResponse.json(
-        { error: "Invalid duration or pricing configuration." },
-        { status: 400 }
-      );
-    }
-
-    const totalCost = durationValue * perUnitRate;
-
-    // 4) Insert booking
-    const bookingsCollection = await dbConnect(collections.BOOKINGS);
-    const now = new Date();
-
-    const doc = {
-      userId: userId ? new ObjectId(userId) : null,
-      serviceId: new ObjectId(service._id),
-      serviceSlug: service.slug,
-      serviceName: service.name,
-
-      durationUnit,
-      durationValue,
-      perUnitRate,
-      totalCost,
-      currency,
-
-      location: {
-        division,
-        district,
-        city,
-        area: area || "",
-        address,
-      },
-
-      customer: {
-        name: customerName,
-        email: customerEmail,
-        phone: customerPhone,
-      },
-
-      status: "PENDING",
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    const result = await bookingsCollection.insertOne(doc);
-
-    const booking = {
-      _id: result.insertedId.toString(),
-      ...doc,
-      userId: doc.userId ? doc.userId.toString() : null,
-      serviceId: doc.serviceId.toString(),
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString(),
-    };
-
-    // 5) Send invoice email 
-    try {
-      await sendBookingInvoiceEmail({
-        to: userEmail,
-        userName,
-        booking,
-        service,
-      });
-    } catch (emailError) {
-      console.error("Error sending booking invoice:", emailError);
-    }
-
-    // 6) Return booking to client
-    return NextResponse.json(booking, { status: 201 });
   } catch (error) {
     console.error("POST /api/bookings error:", error);
     return NextResponse.json(
@@ -147,16 +32,19 @@ export async function POST(req) {
   }
 }
 
-// GET /api/bookings (for My Bookings page later)
+/**
+ * GET /api/bookings
+ * Existing logic preserved (Audit for security recommended)
+ */
+import { collections, dbConnect } from "@/lib/dbConnect";
+import { ObjectId } from "mongodb";
+
 export async function GET(req) {
   try {
     const searchParams = req.nextUrl.searchParams;
     const userIdParam = searchParams.get("userId");
 
     const bookingsCollection = await dbConnect(collections.BOOKINGS);
-
-    // TODO: when auth is implemented, use session.user.id instead,
-    // and ignore userId from query for security reasons.
     const query = {};
 
     if (userIdParam && userIdParam.length === 24) {
@@ -178,9 +66,6 @@ export async function GET(req) {
     return NextResponse.json(bookings);
   } catch (error) {
     console.error("GET /api/bookings error:", error);
-    return NextResponse.json(
-      { error: "Internal server error." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
   }
 }

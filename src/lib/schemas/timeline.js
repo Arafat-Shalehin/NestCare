@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { IdSchema } from "./common";
+import { IdSchema } from "./common.js";
+
 
 export const TimelineEventSchema = z.object({
   bookingId: IdSchema.optional(), // Usually passed in URL or as separate arg
