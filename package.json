@@ -6,8 +6,11 @@
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:init": "node --env-file=.env src/scripts/init-db.mjs"
+
   },
+
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "daisyui": "^5.5.14",
