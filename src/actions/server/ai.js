@@ -3,34 +3,62 @@
 import OpenAI from "openai";
 import { AIOutputSchema } from "@/lib/schemas/ai";
 
+/**
+ * Utility to wait for exponential backoff
+ */
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Internal helper to execute OpenAI calls with structured JSON output
+ * Deterministic Fallback Matcher (Keyword Heuristics)
+ * Used when AI fails all retry attempts or API is down.
  */
-async function callOpenAI(openai, selections, services, isRetry = false) {
-  const systemPrompt = isRetry
-    ? "You are a specialized Care Assistant for NestCare. You MUST return a strictly valid JSON object. Choose the best serviceSlug only from the provided list. No conversational filler."
-    : "You are a specialized Care Assistant for NestCare. Your goal is to recommend the best care service based on user needs. You must respond in valid JSON format.";
+function deterministicHeuristicMatch(selections, services) {
+  const need = (selections.need || "").toLowerCase();
+  
+  let targetSlug = "sick-care"; // Default general fallback
+  
+  if (need.includes("baby") || need.includes("infant") || need.includes("child")) {
+    targetSlug = "baby-care";
+  } else if (need.includes("elderly") || need.includes("senior") || need.includes("grand")) {
+    targetSlug = "elderly-care";
+  } else if (need.includes("adult") || need.includes("sick") || need.includes("patient")) {
+    targetSlug = "sick-care";
+  }
+
+  // Ensure the slug actually exists in the available services list
+  const exists = services.some(s => s.slug === targetSlug);
+  
+  return {
+    serviceSlug: exists ? targetSlug : (services[0]?.slug || "general-care"),
+    confidence: 0.1, // Low confidence signal for heuristic matches
+    reason: "Automated match based on primary category selection (AI system fallback)."
+  };
+}
+
+/**
+ * Internal helper to execute OpenAI calls with strict JSON enforcement
+ */
+async function callOpenAI(openai, selections, services, attempt = 1) {
+  const systemPrompt = `You are a specialized Care Assistant for NestCare.
+  You MUST return ONLY a strictly valid JSON object matching the requested schema.
+  DO NOT include any conversational text, markdown formatting, or explanations.
+  Choose the best serviceSlug ONLY from the provided list.`;
 
   const userPrompt = `
-User Choices:
-- Need: ${selections.need} (Baby/Elderly/Adult)
-- Timing: ${selections.timing} (Daytime/Overnight/Short-term)
-- Specificity: ${selections.specificity} (General/Newborn/Special Needs/Recovery/Post-surgery)
-- Personality Style: ${selections.style} (Quiet/Active/Social)
+User Selections:
+- Need: ${selections.need}
+- Timing: ${selections.timing}
+- Specificity: ${selections.specificity}
+- Style: ${selections.style}
 
-Available Services Slugs:
+Available Service Slugs:
 ${services.map((s) => `- ${s.slug}`).join("\n")}
 
-Rules:
-1. Pick exactly ONE slug from the list.
-2. Return a JSON object with: "serviceSlug", "confidence" (0-1), and "reason".
-
-Example Output:
+Required JSON Structure:
 {
-  "serviceSlug": "elderly-care",
-  "confidence": 0.95,
-  "reason": "User needs overnight support for an elderly parent with general care needs."
+  "serviceSlug": "string",
+  "confidence": number (0-1),
+  "reason": "string"
 }
 `;
 
@@ -41,79 +69,82 @@ Example Output:
       { role: "user", content: userPrompt },
     ],
     response_format: { type: "json_object" },
-    temperature: isRetry ? 0 : 0.3, // Low temperature for consistency
+    temperature: 0, // Maximum determinism for consistency
+    max_tokens: 250,
   });
 
-  return JSON.parse(response.choices[0].message.content);
+  const content = response.choices[0].message.content;
+  return JSON.parse(content);
 }
 
 /**
- * Main AI Match Wizard Logic (Refactored for JSON Mode & Robustness)
+ * Main AI Match Wizard Logic (Hardened Reliability with Retry & Heuristic Fallback)
  */
 export const getAIRecommendation = async (selections, services) => {
   if (!process.env.OPENAI_API_KEY) {
-    throw new Error(
-      "OPENAI_API_KEY is not defined in environment variables."
-    );
+    console.error("AI_CRITICAL: OPENAI_API_KEY is missing from environment.");
+    // Immediate fallback if API key is missing
+    const fallback = deterministicHeuristicMatch(selections, services);
+    return mapToService(fallback, services);
   }
 
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const maxAttempts = 2;
+  const backoffDelays = [0, 200]; // Delays before each attempt (0ms for 1st, 200ms for 2nd)
 
-  try {
-    let recommendationData;
+  let finalRecommendation = null;
 
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      // --- ATTEMPT 1 ---
-      const aiResponse = await callOpenAI(openai, selections, services, false);
+      // Apply backoff if needed
+      if (backoffDelays[attempt - 1] > 0) {
+        await sleep(backoffDelays[attempt - 1]);
+      }
+
+      const aiResponse = await callOpenAI(openai, selections, services, attempt);
       const validation = AIOutputSchema.safeParse(aiResponse);
 
       if (validation.success && services.some(s => s.slug === validation.data.serviceSlug)) {
-        recommendationData = validation.data;
+        finalRecommendation = validation.data;
+        break; // Success reached
       } else {
-        throw new Error("Validation failed or invalid slug returned");
+        const errorDetail = !validation.success 
+          ? JSON.stringify(validation.error.flatten().fieldErrors)
+          : "AI returned invalid slug";
+        throw new Error(errorDetail);
       }
-    } catch (firstAttemptError) {
-      console.warn("AI Match Attempt 1 failed. Retrying with stricter constraints...");
+    } catch (error) {
+      // LOG FAILURE FOR OBSERVABILITY
+      console.warn(`AI_MATCH_LOG: Attempt ${attempt} failed.`, {
+        reason: error.message,
+        selections: { need: selections.need, timing: selections.timing }
+      });
       
-      // --- ATTEMPT 2 (RETRY) ---
-      try {
-        const aiRetryResponse = await callOpenAI(openai, selections, services, true);
-        const retryValidation = AIOutputSchema.safeParse(aiRetryResponse);
-
-        if (retryValidation.success && services.some(s => s.slug === retryValidation.data.serviceSlug)) {
-          recommendationData = retryValidation.data;
-        } else {
-          throw new Error("Retry failed validation");
-        }
-      } catch (retryError) {
-        console.error("AI Match Retry failed. Falling back to safe default.");
-        // --- FALLBACK ---
-        recommendationData = {
-          serviceSlug: services[0]?.slug || "general-care",
-          confidence: 0,
-          reason: "Default fallback due to AI processing error or invalid selection."
-        };
+      if (attempt === maxAttempts) {
+        console.error("AI_MATCH_CRITICAL: Max retries exhausted. Triggering heuristic fallback.");
+        finalRecommendation = deterministicHeuristicMatch(selections, services);
       }
     }
-
-    // Find and return the full service object to maintain compatibility with frontend
-    const matchedService = services.find((s) => s.slug === recommendationData.serviceSlug) || services[0];
-
-    // Deep clone to avoid proxy issues and attach AI metadata for transparency
-    const result = JSON.parse(JSON.stringify(matchedService));
-    result._aiMetadata = {
-      confidence: recommendationData.confidence,
-      reason: recommendationData.reason,
-      processedAt: new Date().toISOString()
-    };
-
-    return result;
-
-  } catch (error) {
-    console.error("Deterministic AI Match Error:", error);
-    // Ultimate failsafe: ensure we still return a valid service if possible
-    return JSON.parse(JSON.stringify(services[0]));
   }
+
+  return mapToService(finalRecommendation, services);
 };
+
+/**
+ * Helper to map the raw recommendation data back to a full Service object
+ */
+function mapToService(recommendation, services) {
+  const matchedService = services.find(s => s.slug === recommendation.serviceSlug) || services[0];
+  
+  // Clone to avoid mutation and attach AI metadata
+  const result = JSON.parse(JSON.stringify(matchedService));
+  
+  result._aiMetadata = {
+    confidence: recommendation.confidence,
+    reason: recommendation.reason,
+    processedAt: new Date().toISOString(),
+    engine: recommendation.confidence > 0.1 ? "openai-gpt-4o-mini" : "heuristic-fallback-v1"
+  };
+
+  return result;
+}
