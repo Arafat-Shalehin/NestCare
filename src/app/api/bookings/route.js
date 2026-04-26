@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createBooking } from "@/actions/server/bookings";
+import logger from "@/lib/logger";
 
 /**
  * POST /api/bookings
@@ -8,6 +9,7 @@ import { createBooking } from "@/actions/server/bookings";
 export async function POST(req) {
   try {
     const body = await req.json();
+    logger.info("POST /api/bookings entry", { serviceSlug: body.serviceSlug });
 
     // Delegate to the hardened Server Action logic
     const result = await createBooking(body);
@@ -18,13 +20,14 @@ export async function POST(req) {
         message: result.message 
       }, { status: 201 });
     } else {
+      logger.warn("POST /api/bookings business failure", { errors: result.errors });
       return NextResponse.json({ 
         error: result.errors?.form?.[0] || "Validation failed", 
         details: result.errors 
       }, { status: 400 });
     }
   } catch (error) {
-    console.error("POST /api/bookings error:", error);
+    logger.error("POST /api/bookings unhandled error", { error: error.message }, error);
     return NextResponse.json(
       { error: "Internal server error." },
       { status: 500 }

@@ -77,12 +77,14 @@ Required JSON Structure:
   return JSON.parse(content);
 }
 
+import logger from "@/lib/logger";
+
 /**
  * Main AI Match Wizard Logic (Hardened Reliability with Retry & Heuristic Fallback)
  */
 export const getAIRecommendation = async (selections, services) => {
   if (!process.env.OPENAI_API_KEY) {
-    console.error("AI_CRITICAL: OPENAI_API_KEY is missing from environment.");
+    logger.error("AI_CRITICAL: OPENAI_API_KEY is missing from environment.");
     // Immediate fallback if API key is missing
     const fallback = deterministicHeuristicMatch(selections, services);
     return mapToService(fallback, services);
@@ -106,6 +108,7 @@ export const getAIRecommendation = async (selections, services) => {
 
       if (validation.success && services.some(s => s.slug === validation.data.serviceSlug)) {
         finalRecommendation = validation.data;
+        logger.info("AI match successful", { attempt, serviceSlug: finalRecommendation.serviceSlug });
         break; // Success reached
       } else {
         const errorDetail = !validation.success 
@@ -115,17 +118,19 @@ export const getAIRecommendation = async (selections, services) => {
       }
     } catch (error) {
       // LOG FAILURE FOR OBSERVABILITY
-      console.warn(`AI_MATCH_LOG: Attempt ${attempt} failed.`, {
+      logger.warn("AI match attempt failed", {
+        attempt,
         reason: error.message,
         selections: { need: selections.need, timing: selections.timing }
       });
       
       if (attempt === maxAttempts) {
-        console.error("AI_MATCH_CRITICAL: Max retries exhausted. Triggering heuristic fallback.");
+        logger.error("AI_MATCH_CRITICAL: Max retries exhausted. Triggering heuristic fallback.", { selections });
         finalRecommendation = deterministicHeuristicMatch(selections, services);
       }
     }
   }
+
 
   return mapToService(finalRecommendation, services);
 };
