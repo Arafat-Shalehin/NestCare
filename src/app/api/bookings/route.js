@@ -1,51 +1,40 @@
 import { NextResponse } from "next/server";
 import { createBooking } from "@/actions/server/bookings";
 import logger from "@/lib/logger";
+import { safeApi } from "@/lib/safeApi";
+import { ApiError } from "@/lib/errors";
+import { collections, dbConnect } from "@/lib/dbConnect";
+import { ObjectId } from "mongodb";
 
 /**
  * POST /api/bookings
  * Hardened API entry point using shared atomic logic
  */
-export async function POST(req) {
-  try {
-    const body = await req.json();
-    logger.info("POST /api/bookings entry", { serviceSlug: body.serviceSlug });
+export const POST = safeApi(async (req) => {
+  const body = await req.json();
+  logger.info("POST /api/bookings entry", { serviceSlug: body.serviceSlug });
 
-    // Delegate to the hardened Server Action logic
-    const result = await createBooking(body);
+  // Delegate to the hardened Server Action logic (already wrapped in safeAction)
+  const result = await createBooking(body);
 
-    if (result.success) {
-      return NextResponse.json({ 
-        id: result.bookingId, 
-        message: result.message 
-      }, { status: 201 });
-    } else {
-      logger.warn("POST /api/bookings business failure", { errors: result.errors });
-      return NextResponse.json({ 
-        error: result.errors?.form?.[0] || "Validation failed", 
-        details: result.errors 
-      }, { status: 400 });
-    }
-  } catch (error) {
-    logger.error("POST /api/bookings unhandled error", { error: error.message }, error);
-    return NextResponse.json(
-      { error: "Internal server error." },
-      { status: 500 }
+  if (!result.success) {
+    // Re-throw to be caught by safeApi for consistent status codes
+    throw new ApiError(
+      result.error?.message || "Validation failed", 
+      result.error?.code || "VALIDATION_ERROR", 
+      400, 
+      result.error?.details
     );
   }
-}
+
+  return NextResponse.json({ 
+    id: result.bookingId, 
+    message: result.message 
+  }, { status: 201 });
+});
 
 /**
  * GET /api/bookings
- * Existing logic preserved (Audit for security recommended)
- */
-import { collections, dbConnect } from "@/lib/dbConnect";
-import { ObjectId } from "mongodb";
-
-export async function GET(req) {
-  try {
-    const searchParams = req.nextUrl.searchParams;
-    const userIdParam = searchParams.get("userId");
 
     const bookingsCollection = await dbConnect(collections.BOOKINGS);
     const query = {};

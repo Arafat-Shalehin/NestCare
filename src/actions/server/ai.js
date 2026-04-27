@@ -77,12 +77,14 @@ Required JSON Structure:
   return JSON.parse(content);
 }
 
+import { safeAction } from "@/lib/safeAction";
+import { ApiError } from "@/lib/errors";
 import logger from "@/lib/logger";
 
 /**
  * Main AI Match Wizard Logic (Hardened Reliability with Retry & Heuristic Fallback)
  */
-export const getAIRecommendation = async (selections, services) => {
+export const getAIRecommendation = safeAction(async (selections, services) => {
   if (!process.env.OPENAI_API_KEY) {
     logger.error("AI_CRITICAL: OPENAI_API_KEY is missing from environment.");
     // Immediate fallback if API key is missing
@@ -131,9 +133,9 @@ export const getAIRecommendation = async (selections, services) => {
     }
   }
 
-
   return mapToService(finalRecommendation, services);
-};
+});
+
 
 /**
  * Helper to map the raw recommendation data back to a full Service object
