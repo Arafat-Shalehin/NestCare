@@ -28,13 +28,7 @@ const areaLocations = {
     "Bashundhara": [23.8164, 90.4300],
 };
 
-const initialCaregivers = [
-    { id: 1, name: "Maria Khan", pos: [23.8103, 90.4125], type: "Elderly Care", area: "Gulshan" },
-    { id: 2, name: "Rahim Ahmed", pos: [23.7949, 90.4043], type: "Baby Care", area: "Banani" },
-    { id: 3, name: "Sumaiya Akhter", pos: [23.7509, 90.3935], type: "Sick Care", area: "Dhanmondi" },
-    { id: 4, name: "Arif Hossain", pos: [23.8223, 90.4219], type: "Companion Care", area: "Bashundhara" },
-    { id: 5, name: "Fatima Zohra", pos: [23.7709, 90.3635], type: "Post-surgery Care", area: "Mirpur" },
-];
+
 
 // --- Helper Components ---
 
@@ -51,29 +45,36 @@ function MapController({ center }) {
 // --- Main Component ---
 
 export default function CareMap() {
-    const [caregivers, setCaregivers] = useState(initialCaregivers);
+    const [caregivers, setCaregivers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [mapCenter, setMapCenter] = useState(null);
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const suggestionRef = useRef(null);
 
-    // Live Movement Simulation
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCaregivers((prev) =>
-                prev.map((c) => ({
-                    ...c,
-                    pos: [
-                        c.pos[0] + (Math.random() - 0.5) * 0.0005,
-                        c.pos[1] + (Math.random() - 0.5) * 0.0005,
-                    ],
-                }))
-            );
-        }, 4000);
+    // Fetch real caregivers from geospatial backend
+    const fetchCaregivers = async (lat, lng) => {
+        try {
+            setIsLoading(true);
+            const res = await fetch(`/api/caregivers/nearby?lat=${lat}&lng=${lng}&radius=10000`);
+            const data = await res.json();
+            if (data.success !== false) {
+                setCaregivers(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch nearby caregivers:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-        return () => clearInterval(interval);
-    }, []);
+    // Initial load and on map center change
+    useEffect(() => {
+        const center = mapCenter || [23.8103, 90.4125];
+        fetchCaregivers(center[0], center[1]);
+    }, [mapCenter]);
+
 
     // Handle outside click for suggestions
     useEffect(() => {
@@ -164,6 +165,12 @@ export default function CareMap() {
                             onFocus={() => searchQuery && setShowSuggestions(true)}
                             className="w-full h-14 pl-14 pr-4 transition-all duration-300 bg-white/95 backdrop-blur-xl border-2 border-(--color-border-subtle) rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-4 focus:ring-(--color-primary-100) focus:border-(--color-primary-500) focus:bg-white text-base font-semibold text-(--color-text-main)"
                         />
+                        {isLoading && (
+                            <div className="absolute right-24 top-1/2 -translate-y-1/2">
+                                <span className="loading loading-spinner loading-sm text-primary"></span>
+                            </div>
+                        )}
+
                         <div className="absolute left-5 top-1/2 -translate-y-1/2 text-xl text-(--color-text-soft) group-focus-within/search:text-(--color-primary-600) transition-colors">
                             📍
                         </div>

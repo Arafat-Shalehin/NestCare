@@ -11,7 +11,9 @@ export const collections = {
   USERS: "users",
   BOOKINGS: "bookings",
   TIMELINE: "timeline",
+  LOCATIONS: "locations",
 };
+
 
 let cached = global.mongo;
 

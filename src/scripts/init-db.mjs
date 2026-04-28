@@ -49,7 +49,15 @@ async function run() {
     await timeline.createIndex({ bookingId: 1 });
     await timeline.createIndex({ userId: 1 });
 
+    // --- LOCATIONS Collection ---
+    console.log("Setting up 'locations' indexes...");
+    const locations = db.collection("locations");
+    // Geospatial index for nearby search
+    await locations.createIndex({ coordinates: "2dsphere" });
+    await locations.createIndex({ caregiverId: 1 }, { unique: true });
+
     console.log("✅ All production indexes ensured successfully.");
+
   } catch (err) {
     console.error("❌ Initialization failed:", err);
   } finally {

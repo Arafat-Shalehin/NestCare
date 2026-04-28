@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:init": "node --env-file=.env src/scripts/init-db.mjs"
+    "db:init": "node --env-file=.env src/scripts/init-db.mjs",
+    "db:seed-locations": "node --env-file=.env src/scripts/seed-locations.mjs"
+
 
   },
 
