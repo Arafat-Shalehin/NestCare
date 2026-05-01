@@ -11,4 +11,5 @@ export const ServicePackageSchema = z.object({
   }),
   image: z.string().url("Must be a valid image URL").optional().or(z.literal("")),
   status: z.enum(["active", "inactive"]).default("active"),
-});
+}).strict();
+

@@ -25,4 +25,5 @@ export const BookingPayloadSchema = z.object({
 export const AdminBookingStatusUpdateSchema = z.object({
   id: IdSchema,
   status: BookingStatusSchema,
-});
+}).strict();
+

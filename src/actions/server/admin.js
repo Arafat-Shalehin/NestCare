@@ -1,10 +1,11 @@
-"use server";
-
 import { collections, dbConnect } from "@/lib/dbConnect";
 import { ObjectId } from "mongodb";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { revalidatePath } from "next/cache";
+import { safeAction } from "@/lib/safeAction";
+import { ApiError } from "@/lib/errors";
+import logger from "@/lib/logger";
 
 // Centralized Schemas
 import { IdSchema } from "@/lib/schemas/common";
@@ -12,49 +13,46 @@ import { AdminBookingStatusUpdateSchema } from "@/lib/schemas/booking";
 import { ServicePackageSchema } from "@/lib/schemas/service";
 import { UserUpdateSchema } from "@/lib/schemas/auth";
 
-/** 🔒 Security helper: Throws error if not admin */
+/** 🔒 Security helper: Ensures caller is admin or throws ApiError */
 async function ensureAdmin() {
   const session = await getServerSession(authOptions);
-  if (session?.user?.role !== "admin") {
-    throw new Error("Unauthorized: Admin access required");
+  if (!session) {
+    throw ApiError.unauthorized("Authentication required");
+  }
+  if (session.user.role !== "admin") {
+    logger.warn("Unauthorized admin access attempt", { userId: session.user.id });
+    throw ApiError.forbidden("Admin access required");
   }
 }
 
 /** 📊 Overview Stats */
-export async function getAdminStats() {
-  try {
-    await ensureAdmin();
+export const getAdminStats = safeAction(async () => {
+  await ensureAdmin();
 
-    const bookingsCollection = await dbConnect(collections.BOOKINGS);
-    const usersCollection = await dbConnect(collections.USERS);
-    const servicesCollection = await dbConnect(collections.SERVICES);
+  const bookingsCollection = await dbConnect(collections.BOOKINGS);
+  const usersCollection = await dbConnect(collections.USERS);
+  const servicesCollection = await dbConnect(collections.SERVICES);
 
-    const [totalBookings, totalUsers, totalServices, revenueData] = await Promise.all([
-      bookingsCollection.countDocuments(),
-      usersCollection.countDocuments(),
-      servicesCollection.countDocuments(),
-      bookingsCollection.aggregate([
-        { $match: { status: "COMPLETED" } },
-        { $group: { _id: null, total: { $sum: "$totalCost" } } }
-      ]).toArray()
-    ]);
+  const [totalBookings, totalUsers, totalServices, revenueData] = await Promise.all([
+    bookingsCollection.countDocuments(),
+    usersCollection.countDocuments(),
+    servicesCollection.countDocuments(),
+    bookingsCollection.aggregate([
+      { $match: { status: "COMPLETED" } },
+      { $group: { _id: null, total: { $sum: "$totalCost" } } }
+    ]).toArray()
+  ]);
 
-    const totalRevenue = revenueData[0]?.total || 0;
-
-    return {
-      totalBookings,
-      totalUsers,
-      totalServices,
-      totalRevenue,
-    };
-  } catch (error) {
-    console.error("getAdminStats error:", error);
-    throw error;
-  }
-}
+  return {
+    totalBookings,
+    totalUsers,
+    totalServices,
+    totalRevenue: revenueData[0]?.total || 0,
+  };
+});
 
 /** 📅 Booking Management */
-export async function getAllBookings() {
+export const getAllBookings = safeAction(async () => {
   await ensureAdmin();
   const bookingsCollection = await dbConnect(collections.BOOKINGS);
 
@@ -66,78 +64,80 @@ export async function getAllBookings() {
     userId: b.userId?.toString(),
     createdAt: b.createdAt?.toISOString(),
   }));
-}
+});
 
-export const updateBookingStatus = async (bookingId, status) => {
-  try {
-    await ensureAdmin();
+export const updateBookingStatus = safeAction(async (bookingId, status) => {
+  await ensureAdmin();
 
-    const validation = AdminBookingStatusUpdateSchema.safeParse({ id: bookingId, status });
-    if (!validation.success) {
-      return { success: false, errors: validation.error.flatten().fieldErrors };
-    }
-
-    const collection = await dbConnect(collections.BOOKINGS);
-    await collection.updateOne(
-      { _id: new ObjectId(bookingId) },
-      { $set: { status, updatedAt: new Date() } }
-    );
-
-    revalidatePath("/admin/bookings");
-    return { success: true };
-  } catch (error) {
-    console.error("updateBookingStatus error:", error);
-    return { success: false, errors: { form: [error.message] } };
+  const validation = AdminBookingStatusUpdateSchema.safeParse({ id: bookingId, status });
+  if (!validation.success) {
+    throw ApiError.badRequest("Invalid status update", "VALIDATION_ERROR", validation.error.flatten().fieldErrors);
   }
-};
+
+  const collection = await dbConnect(collections.BOOKINGS);
+  const result = await collection.updateOne(
+    { _id: new ObjectId(bookingId) },
+    { $set: { status, updatedAt: new Date() } }
+  );
+
+  if (result.matchedCount === 0) throw ApiError.notFound("Booking not found");
+
+  revalidatePath("/admin/bookings");
+  logger.info("Booking status updated by admin", { bookingId, status });
+  return { message: "Status updated successfully" };
+});
 
 /** 🛠 Service Management */
-export async function manageService(id, data) {
-  try {
-    await ensureAdmin();
+export const manageService = safeAction(async (id, data) => {
+  await ensureAdmin();
 
-    // 1) Validate Payload
-    const validation = ServicePackageSchema.safeParse(data);
-    if (!validation.success) {
-      return { success: false, errors: validation.error.flatten().fieldErrors };
-    }
-
-    // 2) Validate ID if updating
-    if (id) {
-      const idValidation = IdSchema.safeParse(id);
-      if (!idValidation.success) {
-        return { success: false, errors: { id: ["Invalid Service ID"] } };
-      }
-    }
-
-    const servicesCollection = await dbConnect(collections.SERVICES);
-
-    if (id) {
-      // Update
-      await servicesCollection.updateOne(
-        { _id: new ObjectId(id) },
-        { $set: { ...validation.data, updatedAt: new Date() } }
-      );
-    } else {
-      // Create
-      await servicesCollection.insertOne({
-        ...validation.data,
-        status: "active",
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
-    }
-
-    revalidatePath("/admin/services");
-    return { success: true };
-  } catch (error) {
-    console.error("manageService error:", error);
-    return { success: false, errors: { form: [error.message] } };
+  // 1) Validate Payload (Strict Schema)
+  const validation = ServicePackageSchema.safeParse(data);
+  if (!validation.success) {
+    throw ApiError.badRequest("Invalid service data", "VALIDATION_ERROR", validation.error.flatten().fieldErrors);
   }
-}
+
+  // 2) Validate ID if updating
+  if (id) {
+    const idValidation = IdSchema.safeParse(id);
+    if (!idValidation.success) throw ApiError.badRequest("Invalid Service ID");
+  }
+
+  const servicesCollection = await dbConnect(collections.SERVICES);
+  const { name, slug, description, pricing, image, status } = validation.data;
+
+  // 3) Strict Field Mapping (Preventing _id or createdAt injection)
+  const serviceDoc = {
+    name,
+    slug,
+    description,
+    pricing,
+    image,
+    status,
+    updatedAt: new Date()
+  };
+
+  if (id) {
+    const result = await servicesCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: serviceDoc }
+    );
+    if (result.matchedCount === 0) throw ApiError.notFound("Service not found");
+    logger.info("Service updated by admin", { id, slug });
+  } else {
+    const result = await servicesCollection.insertOne({
+      ...serviceDoc,
+      createdAt: new Date()
+    });
+    logger.info("New service created by admin", { id: result.insertedId, slug });
+  }
+
+  revalidatePath("/admin/services");
+  return { message: id ? "Service updated" : "Service created" };
+});
 
 /** 🧑‍🤝‍🧑 User Management */
-export async function getAllUsers() {
+export const getAllUsers = safeAction(async () => {
   await ensureAdmin();
   const usersCollection = await dbConnect(collections.USERS);
 
@@ -148,27 +148,26 @@ export async function getAllUsers() {
     _id: u._id.toString(),
     createdAt: u.createdAt?.toISOString(),
   }));
-}
+});
 
-export async function updateUserRole(id, role) {
-  try {
-    await ensureAdmin();
+export const updateUserRole = safeAction(async (id, role) => {
+  await ensureAdmin();
 
-    const validation = UserUpdateSchema.safeParse({ id, role });
-    if (!validation.success) {
-      return { success: false, errors: validation.error.flatten().fieldErrors };
-    }
-
-    const usersCollection = await dbConnect(collections.USERS);
-    await usersCollection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { role, updatedAt: new Date() } }
-    );
-
-    revalidatePath("/admin/users");
-    return { success: true };
-  } catch (error) {
-    console.error("updateUserRole error:", error);
-    return { success: false, errors: { form: [error.message] } };
+  const validation = UserUpdateSchema.safeParse({ id, role });
+  if (!validation.success) {
+    throw ApiError.badRequest("Invalid role update", "VALIDATION_ERROR", validation.error.flatten().fieldErrors);
   }
-}
+
+  const usersCollection = await dbConnect(collections.USERS);
+  const result = await usersCollection.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: { role, updatedAt: new Date() } }
+  );
+
+  if (result.matchedCount === 0) throw ApiError.notFound("User not found");
+
+  revalidatePath("/admin/users");
+  logger.info("User role updated by admin", { targetUserId: id, newRole: role });
+  return { message: "Role updated successfully" };
+});
+
