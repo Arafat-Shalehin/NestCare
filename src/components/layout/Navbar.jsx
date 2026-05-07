@@ -39,7 +39,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-(--color-border-subtle) bg-(--color-surface)/80 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur">
       <nav className="navbar max-w-7xl mx-auto px-4">
         {/* Left: Logo */}
         <div className="flex-1">
@@ -52,10 +52,10 @@ export default function Navbar() {
               className="h-10 w-10 rounded-full"
             />
             <div className="flex flex-col leading-tight">
-              <span className="text-base md:text-lg font-semibold tracking-tight text-(--color-text-main)">
+              <span className="text-base md:text-lg font-bold tracking-tight text-slate-950">
                 NestCare
               </span>
-              <span className="text-[11px] md:text-xs text-(--color-text-muted)">
+              <span className="text-[11px] md:text-xs text-slate-500">
                 Trusted care, right at home
               </span>
             </div>
@@ -68,9 +68,9 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm font-medium transition-colors ${isActive(link.href)
-                ? "text-(--color-primary-600)"
-                : "text-(--color-text-muted) hover:text-(--color-text-main)"
+              className={`text-sm font-medium transition-all duration-200 ease-out ${isActive(link.href)
+                ? "text-blue-600"
+                : "text-slate-500 hover:text-slate-950"
                 }`}
             >
               {link.label}
@@ -81,7 +81,7 @@ export default function Navbar() {
         {/* Right: Auth actions (desktop) */}
         <div className="hidden lg:flex items-center gap-3">
           {status === "loading" ? (
-            <div className="h-9 w-24 rounded-full bg-(--color-bg-soft) animate-pulse" />
+            <div className="h-9 w-24 rounded-xl bg-slate-100 animate-pulse" />
           ) : (
             <>
               {status === "authenticated" && user ? (
@@ -92,20 +92,20 @@ export default function Navbar() {
                       tabIndex={0}
                       className="btn btn-ghost btn-circle avatar"
                     >
-                      <div className="w-9 rounded-full bg-(--color-primary-600) text-(--color-text-invert) flex items-center justify-center text-xs font-semibold">
+                      <div className="w-9 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
                         {getInitials(user?.name, user?.email)}
                       </div>
                     </button>
                     <ul
                       tabIndex={0}
-                      className="menu menu-sm dropdown-content mt-3 w-56 rounded-box bg-(--color-surface) p-2 shadow-lg border border-(--color-border-subtle)"
+                      className="menu menu-sm dropdown-content mt-3 w-56 rounded-3xl bg-white p-2 shadow-lg border border-slate-200"
                     >
-                      <li className="py-2 border-b border-(--color-border-subtle) mb-1">
-                        <p className="text-sm font-semibold text-(--color-text-main)">
-                          Name: {user.name || "Account"}
+                      <li className="py-2 border-b border-slate-100 mb-1">
+                        <p className="text-sm font-bold text-slate-950">
+                          {user.name || "Account"}
                         </p>
-                        <p className="text-[11px] text-(--color-text-soft) truncate">
-                          Email: {user.email}
+                        <p className="text-[11px] text-slate-500 truncate">
+                          {user.email}
                         </p>
                       </li>
                       {user.role === "admin" && (
@@ -119,7 +119,7 @@ export default function Navbar() {
                         <button
                           type="button"
                           onClick={() => signOut({ callbackUrl: "/" })}
-                          className="text-(--color-error-500)"
+                          className="text-red-500"
                         >
                           Sign out
                         </button>
@@ -131,13 +131,13 @@ export default function Navbar() {
                 <>
                   <Link
                     href="/login"
-                    className="btn btn-outline btn-sm text-(--color-text-muted) hover:bg-(--color-bg-soft)"
+                    className="btn btn-ghost btn-sm text-slate-500 hover:bg-slate-100 rounded-xl"
                   >
                     Log in
                   </Link>
                   <Link
                     href="/register"
-                    className="btn btn-sm border-none bg-(--color-primary-600) text-(--color-text-invert) hover:bg-(--color-primary-700) shadow-sm"
+                    className="btn btn-sm border-none bg-slate-950 text-white hover:bg-slate-800 rounded-xl shadow-sm px-4"
                   >
                     Get Started
                   </Link>
@@ -157,7 +157,7 @@ export default function Navbar() {
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-(--color-text-main)"
+                className="h-5 w-5 text-slate-950"
                 fill="none"
                 viewBox="0 0 24 24"
                 strokeWidth="1.6"
@@ -172,14 +172,14 @@ export default function Navbar() {
             </button>
             <ul
               tabIndex={0}
-              className="menu menu-sm dropdown-content mt-3 w-52 rounded-box bg-(--color-surface) p-2 shadow-lg border border-(--color-border-subtle)"
+              className="menu menu-sm dropdown-content mt-3 w-52 rounded-3xl bg-white p-2 shadow-lg border border-slate-200"
             >
               {navLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
                     className={
-                      isActive(link.href) ? "text-(--color-primary-600)" : ""
+                      isActive(link.href) ? "text-blue-600 font-bold" : "text-slate-600"
                     }
                   >
                     {link.label}
@@ -208,7 +208,7 @@ export default function Navbar() {
                     <button
                       type="button"
                       onClick={() => signOut({ callbackUrl: "/" })}
-                      className="text-(--color-error-500)"
+                      className="text-red-500"
                     >
                       Sign out
                     </button>
@@ -222,7 +222,7 @@ export default function Navbar() {
                   <li>
                     <Link
                       href="/register"
-                      className="font-medium text-(--color-primary-600)"
+                      className="font-bold text-blue-600"
                     >
                       Get Started
                     </Link>
