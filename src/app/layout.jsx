@@ -1,19 +1,18 @@
 import "./globals.css";
-import { Inter } from "next/font/google";
+import { Lato } from "next/font/google";
 import NextAuthProvider from "@/provider/NextAuthProvider";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 
-const inter = Inter({
+const lato = Lato({
   subsets: ["latin"],
-  variable: "--font-sans",
+  weight: ["100", "300", "400", "700", "900"],
+  variable: "--font-lato",
 });
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" data-theme="light">
       <body
-        className={`${inter.variable} min-h-screen bg-(--color-bg-base) text-(--color-text-main)`}
+        className={`${lato.variable} font-sans min-h-screen bg-slate-50 text-slate-950`}
       >
         <NextAuthProvider>{children}</NextAuthProvider>
       </body>

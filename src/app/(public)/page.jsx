@@ -1,4 +1,3 @@
-import dynamic from "next/dynamic";
 import AboutSection from "@/components/home/AboutSection";
 import HeroSection from "@/components/home/HeroSection";
 import ServicesSection from "@/components/home/ServicesSection";
