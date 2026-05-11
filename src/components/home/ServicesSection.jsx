@@ -63,24 +63,18 @@ const cardVariants = {
 
 export default function ServicesSection() {
   return (
-    <section className="border-b border-(--color-border-subtle) bg-(--color-bg-base)">
-      <div className="max-w-7xl mx-auto px-4 py-14 md:py-20">
+    <section className="border-b border-slate-200 bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
         {/* Header */}
-        <motion.div
-          className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8 md:mb-10"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-        >
-          <div className="space-y-3 max-w-xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-(--color-primary-600)">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+          <div className="space-y-4 max-w-xl">
+            <p className="text-xs font-bold uppercase tracking-widest text-teal-600">
               Our services
             </p>
-            <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-(--color-text-main)">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-950">
               One platform for every type of home care.
             </h2>
-            <p className="text-sm md:text-base text-(--color-text-muted)">
+            <p className="text-base md:text-lg text-slate-500 leading-relaxed">
               Choose the care your family needs — from babysitting to elderly and special
               sick care — and book directly based on time and location.
             </p>
@@ -89,80 +83,66 @@ export default function ServicesSection() {
           <div className="flex md:justify-end">
             <Link
               href="/services"
-              className="btn btn-sm md:btn-md btn-ghost text-(--color-text-muted) hover:bg-(--color-bg-soft)"
+              className="btn btn-ghost text-slate-500 hover:bg-slate-100 hover:text-slate-950 rounded-xl font-bold transition-all duration-200 ease-out"
             >
               View all services
             </Link>
           </div>
-        </motion.div>
+        </div>
 
         {/* Service cards */}
-        <motion.div
-          className="grid gap-6 md:grid-cols-3"
-          variants={listVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-        >
+        <div className="grid gap-8 md:grid-cols-3">
           {services.map((service) => (
-            <motion.article
+            <article
               key={service.slug}
-              variants={cardVariants}
-              whileHover={{
-                y: -6,
-                boxShadow: "0 20px 40px rgba(15,23,42,0.10)",
-              }}
-              transition={{ type: "spring", stiffness: 220, damping: 20 }}
-              className="group h-full rounded-2xl border border-(--color-border-subtle) bg-(--color-surface) p-5 md:p-6 flex flex-col justify-between cursor-pointer"
+              className="group h-full rounded-2xl border border-slate-200 bg-white p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-200 ease-out cursor-pointer"
             >
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {/* Icon + label */}
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-(--color-bg-soft) text-lg">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 text-2xl border border-slate-100 shadow-sm">
                       {service.icon}
                     </div>
                     <div>
-                      <h3 className="text-base md:text-lg font-semibold text-(--color-text-main)">
+                      <h3 className="text-lg font-bold text-slate-950">
                         {service.name}
                       </h3>
-                      <p className="text-[11px] uppercase tracking-[0.16em] text-(--color-text-soft)">
-                        Home-based support
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-0.5">
+                        Home support
                       </p>
                     </div>
                   </div>
-                  <span
-                    className={`inline-flex text-center items-center rounded-full px-3 py-1 text-[11px] font-medium ${service.tagBg} ${service.tagText}`}
-                  >
-                    Trusted care
-                  </span>
                 </div>
 
                 {/* Description */}
-                <p className="text-sm text-(--color-text-muted)">
+                <p className="text-sm text-slate-500 leading-relaxed">
                   {service.shortDescription}
                 </p>
 
                 {/* Bulleted highlights */}
-                <ul className="space-y-1.5 text-xs">
+                <ul className="space-y-3 text-sm">
                   {service.points.map((point) => (
-                    <li key={point} className="flex gap-2">
-                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-(--color-primary-200)" />
-                      <span className="text-(--color-text-muted)">{point}</span>
+                    <li key={point} className="flex items-center gap-3">
+                      <span className="h-1.5 w-1.5 rounded-full bg-teal-500 flex-shrink-0" />
+                      <span className="text-slate-600 font-medium">{point}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               {/* Call to action */}
-              <div className="pt-4 mt-4 border-t border-(--color-border-subtle) flex items-center justify-between">
-                <div className="text-[11px] text-(--color-text-soft)">
-                  Duration-based pricing • Live booking status
+              <div className="pt-6 mt-8 border-t border-slate-100 flex items-center justify-between">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Live booking status
                 </div>
+                <span className="text-blue-600 font-bold text-xs group-hover:translate-x-1 transition-transform duration-200">
+                  Book now →
+                </span>
               </div>
-            </motion.article>
+            </article>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

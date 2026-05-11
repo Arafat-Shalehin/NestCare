@@ -1,59 +1,59 @@
 export default function AboutSection() {
   return (
-    <section className="border-b border-(--color-border-subtle) bg-(--color-surface)">
-      <div className="max-w-7xl mx-auto px-4 py-14 md:py-20">
-        <div className="grid gap-10 md:grid-cols-2 items-center">
+    <section className="border-b border-slate-200 bg-white">
+      <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
+        <div className="grid gap-16 md:grid-cols-2 items-center">
           {/* Left: concise mission */}
-          <div className="space-y-5 animate-fade-up">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-(--color-primary-600)">
+          <div className="space-y-6">
+            <p className="text-xs font-bold uppercase tracking-widest text-blue-600">
               Our mission
             </p>
 
-            <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-(--color-text-main)">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-950">
               A simple, safe way to book trusted home care.
             </h2>
 
-            <p className="text-sm md:text-base text-(--color-text-muted) max-w-xl">
+            <p className="text-base md:text-lg text-slate-500 max-w-xl leading-relaxed">
               NestCare is built to help families quickly arrange reliable care
               for children, elderly parents, and sick family members — without
               phone calls, guesswork, or uncertainty.
             </p>
 
-            <div className="grid gap-4 sm:grid-cols-3 pt-3">
-              <div className="space-y-2">
-                <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-(--color-primary-50) text-(--color-primary-600)">
+            <div className="grid gap-8 sm:grid-cols-3 pt-6">
+              <div className="space-y-3">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 text-slate-950 border border-slate-100 shadow-sm">
                   👨‍👩‍👧
                 </div>
-                <h3 className="text-sm font-semibold text-(--color-text-main)">
+                <h3 className="text-sm font-bold text-slate-950">
                   For every family
                 </h3>
-                <p className="text-xs text-(--color-text-muted)">
+                <p className="text-xs text-slate-500 leading-relaxed">
                   Baby sitting, elderly support, and sick care — all in one
                   platform.
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-(--color-secondary-50) text-(--color-secondary-600)">
+              <div className="space-y-3">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 text-slate-950 border border-slate-100 shadow-sm">
                   📍
                 </div>
-                <h3 className="text-sm font-semibold text-(--color-text-main)">
+                <h3 className="text-sm font-bold text-slate-950">
                   Location‑aware
                 </h3>
-                <p className="text-xs text-(--color-text-muted)">
+                <p className="text-xs text-slate-500 leading-relaxed">
                   Book care based on your division, district, city, and exact
                   address.
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-(--color-accent-50) text-(--color-accent-500)">
+              <div className="space-y-3">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 text-slate-950 border border-slate-100 shadow-sm">
                   💳
                 </div>
-                <h3 className="text-sm font-semibold text-(--color-text-main)">
+                <h3 className="text-sm font-bold text-slate-950">
                   Clear pricing
                 </h3>
-                <p className="text-xs text-(--color-text-muted)">
+                <p className="text-xs text-slate-500 leading-relaxed">
                   See total cost calculated from duration and service charge
                   before you confirm.
                 </p>
@@ -61,75 +61,76 @@ export default function AboutSection() {
             </div>
           </div>
 
-          {/* Right: subtle animated stats card */}
-          <div className="md:pl-8">
-            <div className="relative animate-float-slow">
-              <div className="pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full bg-(--color-primary-100) opacity-60 blur-3xl" />
+          {/* Right: subtle snapshot card */}
+          <div className="md:pl-12">
+            <div className="relative">
+              {/* Decorative background element */}
+              <div className="absolute -top-10 -right-10 h-48 w-48 rounded-full bg-slate-50 blur-3xl opacity-50" />
 
-              <div className="relative rounded-2xl bg-(--color-bg-base) border border-(--color-border-subtle) shadow-lg shadow-black/5 p-5 md:p-6 space-y-5">
-                <div className="flex items-center justify-between gap-3">
+              <div className="relative rounded-2xl bg-slate-50 border border-slate-200 shadow-md p-8 md:p-10 space-y-8">
+                <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--color-text-soft)">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
                       Platform snapshot
                     </p>
-                    <p className="text-sm text-(--color-text-muted)">
-                      Designed around safety and transparency.
+                    <p className="text-sm font-bold text-slate-950 mt-1">
+                      Designed for safety & transparency.
                     </p>
                   </div>
-                  <span className="inline-flex text-center items-center justify-center rounded-full bg-(--color-primary-50) px-3 py-1 text-[11px] font-medium text-(--color-primary-600)">
+                  <span className="inline-flex px-3 py-1 rounded-full bg-blue-50 text-[11px] font-bold text-blue-600 border border-blue-100">
                     Live booking status
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 pt-2 text-center">
+                <div className="grid grid-cols-3 gap-6 text-center">
                   <div className="space-y-1">
-                    <p className="text-lg font-semibold text-(--color-text-main)">
+                    <p className="text-2xl font-bold text-slate-950">
                       3
                     </p>
-                    <p className="text-[11px] text-(--color-text-soft)">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       Care types
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-lg font-semibold text-(--color-text-main)">
+                    <p className="text-2xl font-bold text-slate-950">
                       100%
                     </p>
-                    <p className="text-[11px] text-(--color-text-soft)">
-                      Online booking
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Online
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-lg font-semibold text-(--color-text-main)">
+                    <p className="text-2xl font-bold text-slate-950">
                       24/7
                     </p>
-                    <p className="text-[11px] text-(--color-text-soft)">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       Access
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-3 text-xs">
-                  <div className="flex items-start gap-2">
-                    <span className="mt-0.5 h-4 w-4 rounded-full bg-(--color-success-100) text-(--color-success-500) flex items-center justify-center text-[10px]">
+                <div className="space-y-4 text-sm">
+                  <div className="flex items-start gap-3">
+                    <span className="mt-0.5 h-5 w-5 flex-shrink-0 inline-flex items-center justify-center rounded-full bg-teal-50 text-teal-600 text-[10px] font-bold border border-teal-100">
                       ✓
                     </span>
-                    <p className="text-(--color-text-muted)">
+                    <p className="text-slate-600 leading-relaxed">
                       Simple booking flow with duration, location, and pricing
                       in a single, clear interface.
                     </p>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <span className="mt-0.5 h-4 w-4 rounded-full bg-(--color-info-100) text-(--color-info-500) flex items-center justify-center text-[10px]">
+                  <div className="flex items-start gap-3">
+                    <span className="mt-0.5 h-5 w-5 flex-shrink-0 inline-flex items-center justify-center rounded-full bg-teal-50 text-teal-600 text-[10px] font-bold border border-teal-100">
                       ✓
                     </span>
-                    <p className="text-(--color-text-muted)">
+                    <p className="text-slate-600 leading-relaxed">
                       Real‑time booking status: Pending, Confirmed, Completed,
                       or Cancelled — always visible to you.
                     </p>
                   </div>
                 </div>
 
-                <p className="text-[11px] text-(--color-text-soft)">
+                <p className="text-[11px] text-slate-400 leading-relaxed italic border-t border-slate-200 pt-6">
                   NestCare focuses on what matters: safe caregivers, clear
                   information, and a booking process that respects your time.
                 </p>

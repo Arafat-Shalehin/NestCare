@@ -115,8 +115,8 @@ function StarRating({ value }) {
           key={star}
           className={
             star <= value
-              ? "text-(--color-accent-500)"
-              : "text-(--color-border-strong)"
+              ? "text-teal-600"
+              : "text-slate-200"
           }
         >
           ★
@@ -137,33 +137,33 @@ function TestimonialCard({ testimonial }) {
     <article
       className="group min-w-65 max-w-xs 
     shrink-0 rounded-2xl border 
-    border-(--color-border-subtle) bg-(--color-surface) 
-    p-4 md:p-5 shadow-sm transition-transform 
-    duration-300 ease-out hover:-translate-y-1.5 
-    hover:border-(--color-primary-200)"
+    border-slate-200 bg-white 
+    p-6 shadow-sm transition-all 
+    duration-200 ease-out hover:-translate-y-1.5 
+    hover:border-blue-200 hover:shadow-md"
     >
-      <div className="flex items-center gap-3 mb-3">
-        <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-(--color-primary-50) text-(--color-primary-600) text-sm font-semibold">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-950 border border-slate-100 font-bold text-sm">
           {initials}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-(--color-text-main) truncate">
+          <p className="text-sm font-bold text-slate-950 truncate">
             {testimonial.name}
           </p>
-          <p className="text-[11px] text-(--color-text-muted) truncate">
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider truncate">
             {testimonial.role} • {testimonial.location}
           </p>
         </div>
       </div>
 
-      <p className="text-xs md:text-sm text-(--color-text-muted) mb-3 line-clamp-4">
+      <p className="text-sm text-slate-500 mb-4 line-clamp-4 leading-relaxed">
         {testimonial.text}
       </p>
 
-      <div className="flex items-center justify-between gap-3 text-[11px]">
+      <div className="flex items-center justify-between gap-3 text-[11px] pt-4 border-t border-slate-50">
         <StarRating value={testimonial.rating} />
-        <span className="rounded-full bg-(--color-bg-soft) px-2 py-1 text-(--color-text-soft)">
-          Verified booking
+        <span className="rounded-full bg-teal-50 px-2 py-1 text-teal-600 font-bold border border-teal-100">
+          Verified
         </span>
       </div>
     </article>
@@ -175,32 +175,32 @@ export default function TestimonialsSection() {
   const marqueeItems = [...testimonials, ...testimonials];
 
   return (
-    <section className="border-b border-(--color-border-subtle) bg-(--color-bg-base)">
-      <div className="max-w-7xl mx-auto px-4 py-14 md:py-20 space-y-8">
+    <section className="border-b border-slate-200 bg-white">
+      <div className="max-w-7xl mx-auto px-4 py-16 md:py-24 space-y-12">
         {/* Header */}
-        <div className="space-y-3 text-center max-w-2xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-(--color-primary-600)">
+        <div className="space-y-4 text-center max-w-2xl mx-auto">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600">
             Testimonials
           </p>
-          <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-(--color-text-main)">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-950">
             Families who trust NestCare.
           </h2>
-          <p className="text-sm md:text-base text-(--color-text-muted)">
+          <p className="text-base md:text-lg text-slate-500 leading-relaxed">
             Real experiences from parents and family members who used NestCare
             to arrange baby care, elderly care, and sick care at home.
           </p>
         </div>
 
         {/* Marquee rows */}
-        <div className="relative mt-4">
+        <div className="relative mt-8">
           {/* linear fades on edges */}
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-10 md:w-16 bg-linear-to-r from-(--color-bg-base) to-transparent" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-10 md:w-16 bg-linear-to-l from-(--color-bg-base) to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-16 md:w-24 bg-linear-to-r from-white to-transparent z-10" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-16 md:w-24 bg-linear-to-l from-white to-transparent z-10" />
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Row 1 */}
             <div className="overflow-hidden">
-              <div className="flex gap-4 md:gap-6 animate-marquee">
+              <div className="flex gap-6 animate-marquee">
                 {marqueeItems.map((t, index) => (
                   <TestimonialCard
                     key={`row1-${index}-${t.name}`}
@@ -212,7 +212,7 @@ export default function TestimonialsSection() {
 
             {/* Row 2 (reverse direction, hidden on very small screens) */}
             <div className="hidden sm:block overflow-hidden">
-              <div className="flex gap-4 md:gap-6 animate-marquee-reverse">
+              <div className="flex gap-6 animate-marquee-reverse">
                 {marqueeItems
                   .slice()
                   .reverse()
